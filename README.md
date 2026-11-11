@@ -3,8 +3,9 @@
 Analyse av leiligheter i Bergen fra Finn-annonser og salgsoppgaver, med kartoversikt.
 
 ## Slik bruker du det
-1. Start en ny økt i Claude Code (app eller web) med dette repoet og miljøet **bolig-bergen**.
-2. Skriv `/boliganalyse https://www.finn.no/realestate/homes/ad.html?finnkode=…` og legg ved salgsoppgaven som PDF.
+1. Start en ny økt i Claude Code med dette repoet og miljøet **bolig-bergen**. Start den helst fra **Claude-appen på PC-en**, og la appen være åpen. Da kan Claude lese Finn-annonsen og meglerens digitale salgsoppgave gjennom nettleseren i appen. Finn blokkerer alle andre automatiske hentinger.
+2. Skriv `/boliganalyse https://www.finn.no/realestate/homes/ad.html?finnkode=…` og legg ved **full salgsoppgave** som PDF (knappen «Last ned salgsoppgave» hos megler, ikke bare vedleggene).
+   - Starter du fra mobil eller web uten appen åpen: legg også ved et skjermbilde av Finn-annonsen der pris, fellesgjeld og felleskostnader står.
 3. Claude:
    - leser salgsoppgaven og tilstandsrapporten
    - regner ut nøkkeltall og reisetid til jobb

@@ -15,8 +15,10 @@ Privat verktøy for å vurdere leiligheter i Bergen. Svar på norsk (bokmål).
 - `oversikt/index.html` + `oversikt/bergen.topo.json`: kilden til artifacten.
   - Publiser på nytt med Artifact-verktøyet, `url` = artifact-URL-en over og `files: {"bergen.topo.json": "oversikt/bergen.topo.json"}`.
   - Uten `capabilities` beholdes `db`.
-- `data/leiligheter/*.json`: sikkerhetskopi av hver analyse.
+- `data/leiligheter/*.json`: sikkerhetskopi, tas bare når Håkon ber om det. Databasen er hovedlageret.
 
 ## Nettverk
 Skymiljøet `bolig-bergen` slipper til `www.finn.no`, `ws.geonorge.no`, `api.entur.io` og `nedlasting.geonorge.no`.
-Finn blokkerer ofte automatiske forespørsler (DataDome). Ikke prøv å omgå det. Bruk salgsoppgaven.
+Finn blokkerer WebFetch og `curl` fra skyen (DataDome). Ikke prøv å omgå det.
+Les Finn gjennom nettleseren i Claude-appen når økten er koblet til Håkons PC (`Claude_Browser`-verktøyene). Ellers brukes salgsoppgaven og skjermbilder.
+Håkon (arbeidssted-id `meg`) og samboeren Camilla (`samboer`) er brukerne.
