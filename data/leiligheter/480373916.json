@@ -1,0 +1,157 @@
+{
+ "finnkode": "480373916",
+ "url": "https://www.finn.no/realestate/homes/ad.html?finnkode=480373916",
+ "tittel": null,
+ "adresse": "Nebbeveien 21",
+ "postnr": "5144",
+ "bydel": "Fyllingsdalen",
+ "lat": 60.352615,
+ "lon": 5.29441,
+ "boligtype": "Leilighet",
+ "kilde": "salgsoppgave (kun vedlegg: tilstandsrapport og egenerklæring)",
+ "lagtTil": "2026-11-11T18:01:55Z",
+ "analysertDato": "2026-11-11T18:01:55Z",
+ "prisantydning": null,
+ "fellesgjeld": null,
+ "totalpris": null,
+ "omkostninger": null,
+ "fellesMnd": null,
+ "fellesDekker": null,
+ "kommunaleAvgAar": null,
+ "eiendomsskattAar": null,
+ "krPerM2": null,
+ "felleskostPerM2": null,
+ "mndKostnad": null,
+ "mndKostnadForklaring": null,
+ "braI": 75,
+ "bra": 95,
+ "braE": 2,
+ "pRom": null,
+ "soverom": 2,
+ "rom": 3,
+ "etasje": "3",
+ "byggeaar": 1973,
+ "eieform": "Andel",
+ "energimerke": null,
+ "heis": null,
+ "balkong": true,
+ "parkering": null,
+ "oppvarming": "Elektriske varmekabler på bad; øvrig oppvarming ikke oppgitt",
+ "tg3": [],
+ "tg2": [
+  {
+   "rom": "Vinduer",
+   "tekst": "Isolerglass i trekarmer fra 1991; over halvparten av forventet levealder er gått. Stuevindu og balkongdør er fra 2018.",
+   "estimat": null,
+   "side": 9
+  }
+ ],
+ "tgiu": [
+  "Felles avløpsstamme (ikke kontrollert)",
+  "Fuktsøk/hulltaking ved bad (ikke utført, badet er nytt)"
+ ],
+ "oppussingEstimat": 60000,
+ "borettslag": {
+  "navn": "Nebbestølen Borettslag",
+  "type": "Borettslag",
+  "antallEnheter": null,
+  "fellesgjeldTotal": null,
+  "rente": null,
+  "avdragsfriTil": null,
+  "disponibleMidler": null,
+  "forretningsforer": null,
+  "planlagteTiltak": [
+   "Rørfornying, ifølge selger ca. +500 kr/mnd i felleskostnader (egenerklæring, s. 19)"
+  ],
+  "vurdering": "Ukjent. Fellesgjeld, budsjett, lånevilkår og disponible midler står i selve salgsoppgaven, som ikke var med. Varslet rørfornying peker mot økt felleskost."
+ },
+ "ferdigattest": null,
+ "forkjopsrett": null,
+ "egenerklaringMerknader": [
+  "Selger kjøpte 20.07.2026 og har ikke bodd i boligen (s. 15)",
+  "Bad totalrenovert 2026 av faglærte (Vatten Rørteknikk AS, Elektro Team AS), dokumentasjon finnes (s. 16)",
+  "Hele el-anlegget nytt 2026 (Elektro Team AS), dokumentasjon finnes (s. 17)",
+  "Nye sluk og nytt rør-i-rør-system med vannskap 2026 (Vatten Rørteknikk AS) (s. 17)",
+  "Planlagt rørfornying i borettslaget, ca. +500 kr/mnd ifølge selger (s. 19)",
+  "Radon ikke målt (s. 19)",
+  "Selges med boligselgerforsikring (Gjensidige) (s. 19)"
+ ],
+ "pendling": {
+  "samboer": {
+   "kollektivMin": 20,
+   "bytter": 0,
+   "rute": "Buss 4",
+   "gangMin": 80,
+   "gangKm": 5.5,
+   "sykkelMin": 37
+  },
+  "meg": {
+   "kollektivMin": 27,
+   "bytter": 2,
+   "rute": "Buss 4 → Bybanen 2 → Buss 51",
+   "gangMin": 76,
+   "gangKm": 5.8,
+   "sykkelMin": 25
+  }
+ },
+ "score": null,
+ "delscorer": {
+  "pris": null,
+  "tilstand": 92,
+  "okonomi": null,
+  "beliggenhet": 70,
+  "kriterier": 90
+ },
+ "delscoreBegrunnelse": {
+  "pris": "Ikke vurdert: prisantydning og fellesgjeld mangler (står ikke i vedleggene, og Finn og den digitale salgsoppgaven var utilgjengelige).",
+  "tilstand": "100 − 3 (TG2 vinduer) − 5 (ingen hulltaking/fuktsøk på bad, og felles stamme ikke kontrollert). Ingen TG3. Bad, kjøkken, gulv, el og vannrør er nye i 2026. Merk at rapporten er et utkast, og at nytt arbeid fra en selger som har eid i tre måneder bør dokumenteres godt.",
+  "okonomi": "Ikke vurdert: fellesgjeld, felleskostnader og borettslagets økonomi mangler. Kjent: varslet rørfornying med ca. +500 kr/mnd.",
+  "beliggenhet": "Lengste reisetid er 27 min (meg, kollektiv med 2 bytter), som gir 70. Samboer har 20 min med buss 4 uten bytte. Ingen justering for område (foretrukne bydeler er ikke fylt ut i kriteriene).",
+  "kriterier": "50 + balkong (+10) + Bybanen ca. 500 m unna, Fyllingsdalen terminal (+10) + BRA-i 75 m² (+10) + vestvendt balkong/kveldssol (+5) + innflyttingsklar (+10) − andel, ikke selveier (−5). Heis, parkering og felleskost. er ukjent og ikke tatt med. Pris-kravet er ikke kontrollert."
+ },
+ "oppsummering": "Nyoppusset 3-roms (2 soverom, BRA-i 75 m²) i 3. etasje med 17,5 m² innglasset vestbalkong, ca. 500 m fra Bybanen i Fyllingsdalen. Tilstanden er god på papiret: alt innvendig er nytt i 2026, og eneste avvik er gamle vinduer (TG2). Foreløpig vurdering, ikke ferdig scoret: pris og borettslagets økonomi mangler. Verdt en visning hvis totalprisen er innenfor budsjettet. Krev dokumentasjon på oppussingen, siden selger kjøpte i juli og selger uten å ha bodd der.",
+ "styrker": [
+  "Totalrenovert 2026: bad, kjøkken, gulv, el-anlegg og rør-i-rør, utført av faglærte med dokumentasjon (s. 7, 16–17)",
+  "Kun ett TG2 og ingen TG3 i tilstandsrapporten (s. 8–9)",
+  "Romslig: BRA-i 75 m², stue/kjøkken 34,5 m², to soverom på 10,8 og 12,4 m² (s. 12)",
+  "Vestvendt innglasset balkong på 17,5 m² (s. 9, 12)",
+  "Kort vei til Bybanen (Fyllingsdalen terminal ca. 500 m), og samboer har 20 min med buss uten bytte",
+  "Selges med boligselgerforsikring (s. 19)"
+ ],
+ "svakheter": [
+  "Pris, fellesgjeld og felleskostnader er ukjent. Vedleggene inneholder ingen økonomi.",
+  "Vinduer fra 1991 har passert halve levealderen (TG2, s. 9). Hvem som har ansvaret, borettslaget eller andelseier, er ukjent.",
+  "Varslet rørfornying i borettslaget, ca. +500 kr/mnd ifølge selger (s. 19)",
+  "Meg: 27 min kollektiv med 2 bytter, og 76 min å gå",
+  "Andelsbolig, ikke selveier",
+  "Naturlig ventilasjon i boligen (ventiler i vinduer), bare mekanisk avtrekk på bad (s. 10)"
+ ],
+ "rodeFlagg": [
+  "Planlagt rørfornying i borettslaget med varslet økning i felleskostnadene, ca. +500 kr/mnd ifølge selger (egenerklæring, s. 19)"
+ ],
+ "sporsmal": [
+  "Hva er prisantydning, fellesgjeld, felleskostnader og hva dekker felleskostnadene?",
+  "Når er rørfornyingen vedtatt eller planlagt, hvordan finansieres den, og hvor mye øker felleskostnadene?",
+  "Hva er borettslagets lånevilkår (rente, avdragsfrihet) og disponible midler?",
+  "Kan vi få samsvarserklæring for el-anlegget og våtromsdokumentasjon (membran, sluk) fra Vatten Rørteknikk og Elektro Team?",
+  "Er vinduene borettslagets eller andelseiers ansvar, og er det planlagt utskifting?",
+  "Er det heis, og hvilke parkeringsmuligheter finnes?",
+  "Hvorfor er tilstandsrapporten merket «utkast», og finnes det en endelig versjon?",
+  "Hva er energimerket, og hva er hovedoppvarmingen utenom varmekablene på badet?"
+ ],
+ "visninger": [],
+ "mangler": [
+  "Selve salgsoppgaven: PDF-en inneholder bare vedlegg (tilstandsrapport, egenerklæring, kart, løsøreliste)",
+  "Finn-annonsen var blokkert (403), og den digitale salgsoppgaven (emvest.no) er ikke tillatt i nettverket",
+  "Prisantydning, fellesgjeld, totalpris, omkostninger og felleskostnader, og dermed også kr/m², månedskostnad, pris- og økonomiscore og totalscore",
+  "Borettslagets økonomi: antall enheter, fellesgjeld totalt, rente, avdragsfrihet, disponible midler, forretningsfører",
+  "Energimerke, heis, parkering og hovedoppvarming",
+  "Ferdigattest, forkjøpsrett og vedtekter (dyrehold, utleie)",
+  "Visninger",
+  "Tilstandsrapporten er merket «Rapportutkast/Utkast»",
+  "Leilighetsnr. H0201 tyder på 2. etasje, men takstmannen oppgir 3. etasje (adkomstnivå kan forklare forskjellen)"
+ ],
+ "status": "ny",
+ "favoritt": false,
+ "notat": ""
+}
