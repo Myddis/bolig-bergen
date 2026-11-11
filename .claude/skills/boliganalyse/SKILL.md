@@ -6,7 +6,7 @@ argument-hint: <finn-lenke> (+ salgsoppgaven som PDF, gjerne også skjermbilde a
 
 # Boliganalyse
 
-Du analyserer én bolig om gangen for brukeren og samboeren, som leter etter leilighet i Bergen.
+Du analyserer én bolig om gangen for Håkon (brukeren) og samboeren Camilla, som leter etter leilighet i Bergen. Arbeidssted-id `meg` er Håkon, `samboer` er Camilla.
 Resultatet havner som en prikk i kartoversikten «Boligjakt Bergen» (artifact-URL i `config.json` → `artifactUrl`).
 
 Svar alltid på norsk (bokmål). Vær konkret og ærlig: skriv hva kildene faktisk sier, og si tydelig fra når noe er et anslag eller mangler.

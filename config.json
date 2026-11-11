@@ -3,14 +3,14 @@
   "arbeidssteder": [
     {
       "id": "samboer",
-      "navn": "Samboer",
+      "navn": "Camilla",
       "adresse": "Sydneshaugen 10, 5007 Bergen",
       "lat": 60.389154,
       "lon": 5.318076
     },
     {
       "id": "meg",
-      "navn": "Meg",
+      "navn": "Håkon",
       "adresse": "Edvard Griegs vei 3B, 5059 Bergen",
       "lat": 60.373031,
       "lon": 5.341508
