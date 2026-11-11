@@ -1,0 +1,24 @@
+{
+  "artifactUrl": "https://claude.ai/artifact/PSuhmmL6pbLh7nYsgSyQZ2",
+  "arbeidssteder": [
+    {
+      "id": "samboer",
+      "navn": "Samboer",
+      "adresse": "Sydneshaugen 10, 5007 Bergen",
+      "lat": 60.389154,
+      "lon": 5.318076
+    },
+    {
+      "id": "meg",
+      "navn": "Meg",
+      "adresse": "Edvard Griegs vei 3B, 5059 Bergen",
+      "lat": 60.373031,
+      "lon": 5.341508
+    }
+  ],
+  "reisetid": {
+    "ankomst": "08:00",
+    "ukedag": "tirsdag",
+    "kommentar": "Kollektiv regnes som raskeste reise med oppmøte kl. 08:00 en vanlig tirsdag, inkludert gange til/fra holdeplass."
+  }
+}

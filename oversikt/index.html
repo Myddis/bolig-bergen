@@ -1,0 +1,897 @@
+<title>Boligjakt Bergen</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Hanken+Grotesk:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: kartet er hovedflaten; filterlinje over kartet, liste/detalj i sidepanel (mobil: stablet). */
+:root {
+  --bg: #e9eef0;
+  --surface: #ffffff;
+  --surface-2: #f3f6f7;
+  --ink: #14212a;
+  --muted: #586973;
+  --line: #d3dce0;
+  --accent: #0d6a87;
+  --accent-ink: #ffffff;
+  --sea: #c6d9e3;
+  --land: #f8f9f5;
+  --by: #ebe8e1;
+  --skog: #dce8d5;
+  --vann: #b4cfdd;
+  --vei: #ffffff;
+  --vei-kant: #c9d1d5;
+  --vei-hoved: #f3d9a4;
+  --bane: #7a5c93;
+  --grense: #7d8f99;
+  --nabo: #eef0ea;
+  --good: #23824f;
+  --mid: #c48a14;
+  --bad: #c2413a;
+  --none: #8996a0;
+  --shadow: 0 1px 2px rgb(20 33 42 / .08), 0 6px 20px rgb(20 33 42 / .10);
+  --f-display: "Bricolage Grotesque", "Hanken Grotesk", system-ui, sans-serif;
+  --f-body: "Hanken Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0c1419; --surface: #131e25; --surface-2: #18252d; --ink: #e3ecf0; --muted: #93a5ae;
+    --line: #26353e; --accent: #4fb4d3; --accent-ink: #06222c; --sea: #0a1820; --land: #1a252c;
+    --by: #212d35; --skog: #1a2a24; --vann: #10303f; --vei: #33424b; --vei-kant: #33424b;
+    --vei-hoved: #5a5240; --bane: #b394cf; --grense: #6f8591; --nabo: #161f25;
+    --good: #46c07f; --mid: #e6b043; --bad: #ee6a5e; --none: #6f7f89;
+    --shadow: 0 1px 2px rgb(0 0 0 / .4), 0 8px 24px rgb(0 0 0 / .35);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0c1419; --surface: #131e25; --surface-2: #18252d; --ink: #e3ecf0; --muted: #93a5ae;
+  --line: #26353e; --accent: #4fb4d3; --accent-ink: #06222c; --sea: #0a1820; --land: #1a252c;
+  --by: #212d35; --skog: #1a2a24; --vann: #10303f; --vei: #33424b; --vei-kant: #33424b;
+  --vei-hoved: #5a5240; --bane: #b394cf; --grense: #6f8591; --nabo: #161f25;
+  --good: #46c07f; --mid: #e6b043; --bad: #ee6a5e; --none: #6f7f89;
+  --shadow: 0 1px 2px rgb(0 0 0 / .4), 0 8px 24px rgb(0 0 0 / .35);
+  color-scheme: dark;
+}
+
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 14px; line-height: 1.45; }
+* { box-sizing: border-box; }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
+
+.app { height: 100%; display: grid; grid-template-rows: auto 1fr; }
+header.top {
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  padding-block: 12px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  border-bottom: 1px solid var(--line); background: var(--surface);
+}
+.brand { display: flex; align-items: baseline; gap: 12px; min-width: 0; }
+.brand h1 { font-family: var(--f-display); font-weight: 700; font-size: 22px; letter-spacing: -.02em; margin: 0; white-space: nowrap; }
+.brand .sub { color: var(--muted); font-size: 13px; }
+.top .spacer { flex: 1; }
+.colorby { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; }
+select, input[type=number], textarea {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 5px 8px; min-height: 32px;
+}
+select:hover, input[type=number]:hover { border-color: var(--grense); }
+
+main.body { display: grid; grid-template-columns: minmax(0, 1fr) 400px; min-height: 0; }
+.mapcol { display: grid; grid-template-rows: auto 1fr; min-width: 0; min-height: 0; }
+
+/* Filterlinje */
+.filters {
+  display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: center;
+  padding-block: 10px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: 16px;
+  background: var(--surface-2); border-bottom: 1px solid var(--line);
+}
+.f { display: flex; align-items: center; gap: 6px; }
+.f > label, .f > .lbl { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; }
+.f input[type=number] { width: 72px; }
+.f .dash { color: var(--muted); }
+details.pop { position: relative; }
+details.pop > summary {
+  list-style: none; cursor: pointer; border: 1px solid var(--line); background: var(--surface);
+  border-radius: 6px; padding: 5px 10px; min-height: 32px; display: flex; align-items: center; gap: 6px; white-space: nowrap;
+}
+details.pop > summary::-webkit-details-marker { display: none; }
+details.pop > summary::after { content: ""; width: 6px; height: 6px; border-right: 1.5px solid var(--muted); border-bottom: 1.5px solid var(--muted); transform: rotate(45deg) translateY(-2px); margin-left: 2px; }
+details.pop[open] > summary { border-color: var(--accent); }
+.popbody {
+  position: absolute; z-index: 30; top: calc(100% + 6px); left: 0; background: var(--surface); border: 1px solid var(--line);
+  border-radius: 8px; box-shadow: var(--shadow); padding: 10px; display: grid; gap: 4px; min-width: 190px;
+}
+.popbody label { display: flex; align-items: center; gap: 8px; padding: 4px 6px; border-radius: 4px; cursor: pointer; }
+.popbody label:hover { background: var(--surface-2); }
+.chk { display: flex; align-items: center; gap: 6px; cursor: pointer; white-space: nowrap; }
+.linkbtn { background: none; border: 0; color: var(--accent); cursor: pointer; padding: 4px 2px; font-weight: 600; }
+.filtertoggle { display: none; }
+
+/* Kart */
+.map { position: relative; min-height: 0; overflow: hidden; background: var(--sea); touch-action: none; }
+.map svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: grab; }
+.map svg:active { cursor: grabbing; }
+.l-nabo { fill: var(--nabo); stroke: none; }
+.l-land { fill: var(--land); stroke: none; }
+.l-by { fill: var(--by); stroke: none; }
+.l-skog { fill: var(--skog); stroke: none; }
+.l-vann { fill: var(--vann); stroke: none; }
+.l-vei { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.l-vei.k { stroke: var(--vei-kant); }
+.l-vei.f { stroke: var(--vei); }
+.l-vei.r, .l-vei.e { stroke: var(--vei-hoved); }
+.l-bane { fill: none; stroke: var(--bane); stroke-dasharray: 4 3; vector-effect: non-scaling-stroke; stroke-width: 1.6; }
+.l-bydel { fill: none; stroke: var(--grense); stroke-width: 1.1; stroke-dasharray: 5 4; vector-effect: non-scaling-stroke; opacity: .75; }
+.l-bydel.sel { fill: var(--accent); fill-opacity: .06; stroke: var(--accent); stroke-dasharray: none; opacity: 1; stroke-width: 1.6; }
+.lbl-bydel { font-family: var(--f-display); font-weight: 700; font-size: 13px; letter-spacing: .14em; text-transform: uppercase; fill: var(--muted); opacity: .7; pointer-events: none; text-anchor: middle; paint-order: stroke; stroke: var(--land); stroke-width: 3px; }
+.lbl-sted { font-size: 11px; fill: var(--muted); pointer-events: none; paint-order: stroke; stroke: var(--land); stroke-width: 3px; }
+.dot { cursor: pointer; stroke: var(--surface); stroke-width: 2; transition: r .12s; }
+.dot.fade { opacity: .35; }
+.ring { fill: none; stroke: var(--ink); stroke-width: 1.6; pointer-events: none; }
+.selring { fill: none; stroke: var(--accent); stroke-width: 3; pointer-events: none; }
+.work rect { fill: var(--ink); stroke: var(--surface); stroke-width: 2; }
+.work text { fill: var(--surface); font-weight: 700; font-size: 11px; text-anchor: middle; dominant-baseline: central; pointer-events: none; }
+.work text.worklbl { font-size: 11px; font-weight: 600; fill: var(--ink); paint-order: stroke; stroke: var(--land); stroke-width: 3px; pointer-events: none; }
+
+.mapctl { position: absolute; right: max(12px, env(safe-area-inset-right, 0px)); top: 12px; display: grid; gap: 6px; z-index: 5; }
+.mapctl button {
+  width: 34px; height: 34px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface);
+  box-shadow: var(--shadow); cursor: pointer; font-size: 18px; line-height: 1; display: grid; place-items: center;
+}
+.mapctl button.fit { font-size: 11px; font-weight: 700; }
+.legend {
+  position: absolute; left: max(12px, env(safe-area-inset-left, 0px)); bottom: 12px; z-index: 5; background: var(--surface);
+  border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; box-shadow: var(--shadow); font-size: 12px; display: grid; gap: 4px;
+}
+.legend .t { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; }
+.legend .row { display: flex; align-items: center; gap: 6px; }
+.sw { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex: none; }
+.legend .src { color: var(--muted); font-size: 10px; }
+.maploading { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); }
+
+.tip {
+  position: absolute; z-index: 20; pointer-events: none; background: var(--surface); border: 1px solid var(--line);
+  border-radius: 8px; box-shadow: var(--shadow); padding: 10px 12px; width: 250px; font-size: 13px;
+}
+.tip h4 { margin: 0 0 2px; font-family: var(--f-display); font-size: 15px; font-weight: 700; letter-spacing: -.01em; }
+.tip .meta { color: var(--muted); font-size: 12px; margin-bottom: 8px; }
+.tip dl { display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; margin: 0; }
+.tip dt { color: var(--muted); }
+.tip dd { margin: 0; text-align: right; }
+
+/* Sidepanel */
+aside.side { border-left: 1px solid var(--line); background: var(--surface); min-height: 0; display: grid; grid-template-rows: auto 1fr; min-width: 0; }
+.sidehead { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+.sidehead h2 { font-family: var(--f-display); font-size: 16px; margin: 0; font-weight: 700; }
+.sidehead .count { color: var(--muted); font-size: 13px; }
+.sidehead .spacer { flex: 1; }
+.scroll { overflow-y: auto; min-height: 0; }
+.list { display: grid; }
+.card {
+  display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; text-align: left; width: 100%;
+  background: none; border: 0; border-bottom: 1px solid var(--line); padding: 12px 16px; cursor: pointer;
+}
+.card:hover, .card.hl { background: var(--surface-2); }
+.card.fade { opacity: .55; }
+.card .adr { font-weight: 600; font-size: 14px; min-width: 0; overflow-wrap: anywhere; }
+.card .sub { color: var(--muted); font-size: 12px; grid-column: 1; }
+.card .facts { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 13px; }
+.card .commute { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px; }
+.pill { display: inline-flex; align-items: center; gap: 4px; border-radius: 999px; padding: 1px 8px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+.pill.score { color: #fff; min-width: 38px; justify-content: center; font-family: var(--f-mono); }
+.pill.soft { background: var(--surface-2); border: 1px solid var(--line); font-weight: 500; }
+.pill.status { background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--accent); }
+.pill.warn { background: color-mix(in srgb, var(--bad) 14%, transparent); color: var(--bad); }
+.fav { color: var(--mid); }
+
+.empty { padding: 28px 20px; display: grid; gap: 10px; color: var(--muted); }
+.empty h3 { margin: 0; color: var(--ink); font-family: var(--f-display); font-size: 18px; }
+.empty code { font-family: var(--f-mono); background: var(--surface-2); border: 1px solid var(--line); border-radius: 4px; padding: 1px 5px; color: var(--ink); font-size: 12px; }
+.empty ol { margin: 0; padding-left: 18px; display: grid; gap: 6px; }
+.note { padding: 8px 16px; font-size: 12px; color: var(--muted); background: var(--surface-2); border-bottom: 1px solid var(--line); }
+
+/* Detalj */
+.detail { padding: 0 0 32px; }
+.dhead { padding: 14px 16px 12px; border-bottom: 1px solid var(--line); display: grid; gap: 6px; }
+.back { justify-self: start; }
+.dhead h2 { margin: 0; font-family: var(--f-display); font-size: 22px; line-height: 1.15; letter-spacing: -.02em; text-wrap: balance; }
+.dhead .meta { color: var(--muted); }
+.dhead .actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.btn { border: 1px solid var(--line); background: var(--surface); border-radius: 6px; padding: 5px 10px; cursor: pointer; text-decoration: none; color: var(--ink); font-weight: 600; font-size: 13px; display: inline-flex; gap: 6px; align-items: center; min-height: 32px; }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn[aria-pressed=true] { border-color: var(--mid); color: var(--mid); }
+section.blk { padding: 14px 16px; border-bottom: 1px solid var(--line); display: grid; gap: 10px; }
+section.blk h3 { margin: 0; font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 700; }
+.scorebox { display: grid; grid-template-columns: auto 1fr; gap: 16px; align-items: center; }
+.bigscore { width: 72px; height: 72px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-family: var(--f-display); font-weight: 700; font-size: 28px; }
+.bars { display: grid; gap: 5px; }
+.bar { display: grid; grid-template-columns: 92px 1fr 28px; gap: 8px; align-items: center; font-size: 12px; }
+.bar .track { height: 6px; background: var(--surface-2); border-radius: 3px; overflow: hidden; border: 1px solid var(--line); }
+.bar .fill { height: 100%; border-radius: 3px; }
+.kv { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 16px; }
+.kv div { display: grid; gap: 1px; min-width: 0; }
+.kv span { font-size: 11px; color: var(--muted); }
+.kv b { font-weight: 600; font-size: 15px; overflow-wrap: anywhere; }
+.commtab { width: 100%; border-collapse: collapse; font-size: 13px; }
+.commtab th { text-align: left; font-weight: 600; font-size: 11px; color: var(--muted); padding: 4px 6px 4px 0; border-bottom: 1px solid var(--line); }
+.commtab td { padding: 6px 6px 6px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+.commtab td.r, .commtab th.r { text-align: right; }
+.commtab .route { color: var(--muted); font-size: 12px; }
+ul.plain { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+ul.flags { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+ul.flags li { border-left: 3px solid var(--bad); padding: 2px 0 2px 10px; }
+.tg { display: grid; gap: 6px; }
+.tgrow { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: baseline; font-size: 13px; }
+.tgbadge { font-family: var(--f-mono); font-size: 11px; font-weight: 600; border-radius: 4px; padding: 1px 5px; color: #fff; }
+.tg3 { background: var(--bad); } .tg2 { background: var(--mid); }
+.prose { margin: 0; max-width: 65ch; }
+textarea { width: 100%; min-height: 84px; resize: vertical; }
+.saved { font-size: 12px; color: var(--muted); min-height: 1em; }
+.cols2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+@media (max-width: 860px) {
+  .app { height: auto; min-height: 100%; }
+  main.body { grid-template-columns: 1fr; }
+  .mapcol { grid-template-rows: auto 58vh; }
+  aside.side { border-left: 0; border-top: 1px solid var(--line); }
+  .filtertoggle { display: inline-flex; }
+  .filters { padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .filters.collapsed > :not(.filtertoggle) { display: none; }
+  .detailwrap { position: fixed; inset: 0; z-index: 50; background: var(--surface); overflow-y: auto;
+    padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+  .colorby span { display: none; }
+  .cols2 { grid-template-columns: 1fr; }
+  .tip { display: none; }
+  .legend { padding: 6px 8px; font-size: 11px; gap: 2px; }
+  .legend .src, .legend .row.work-row { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="app">
+  <header class="top">
+    <div class="brand"><h1>Boligjakt Bergen</h1><span class="sub" id="summary">Laster …</span></div>
+    <div class="spacer"></div>
+    <label class="colorby" for="colorby"><span>Farg prikker etter</span>
+      <select id="colorby">
+        <option value="score">Score</option>
+        <option value="krm2">Kr/m²</option>
+      </select>
+    </label>
+  </header>
+
+  <main class="body">
+    <div class="mapcol">
+      <form class="filters collapsed" id="filters" autocomplete="off">
+        <button type="button" class="btn filtertoggle" id="filtertoggle" aria-expanded="false">Filtre <span id="fcount"></span></button>
+        <details class="pop" id="bydelpop">
+          <summary><span id="bydelsum">Alle bydeler</span></summary>
+          <div class="popbody" id="bydelopts"></div>
+        </details>
+        <div class="f"><label for="pmin">Totalpris</label>
+          <input type="number" id="pmin" min="0" step="0.25" placeholder="fra" inputmode="decimal"><span class="dash">–</span>
+          <input type="number" id="pmax" min="0" step="0.25" placeholder="til" inputmode="decimal"><span class="lbl">mill</span></div>
+        <div class="f"><label for="sov">Soverom</label>
+          <select id="sov"><option value="0">Alle</option><option value="1">1+</option><option value="2">2+</option><option value="3">3+</option><option value="4">4+</option></select></div>
+        <div class="f"><label for="bra">BRA-i</label>
+          <select id="bra"><option value="0">Alle</option><option>30</option><option>40</option><option>50</option><option>60</option><option>70</option><option>80</option><option>100</option></select></div>
+        <div class="f"><label for="eie">Eieform</label>
+          <select id="eie"><option value="">Alle</option><option>Selveier</option><option>Andel</option><option>Aksje</option></select></div>
+        <div class="f"><label for="status">Status</label>
+          <select id="status">
+            <option value="aktive">Aktive</option><option value="">Alle</option>
+            <option value="ny">Ny</option><option value="interessert">Interessert</option><option value="visning">Visning</option>
+            <option value="bud">Bud</option><option value="avvist">Avvist</option><option value="solgt">Solgt</option>
+          </select></div>
+        <div class="f"><label for="smin">Score</label>
+          <select id="smin"><option value="0">Alle</option><option>50</option><option>60</option><option>70</option><option>80</option></select></div>
+        <div class="f" id="commutefilters"></div>
+        <label class="chk" for="notg3"><input type="checkbox" id="notg3"> Uten TG3</label>
+        <label class="chk" for="favonly"><input type="checkbox" id="favonly"> Bare favoritter</label>
+        <button type="button" class="linkbtn" id="reset">Nullstill</button>
+      </form>
+      <div class="map" id="map">
+        <div class="maploading" id="maploading">Tegner kart …</div>
+        <svg id="svg" role="img" aria-label="Kart over Bergen med registrerte boliger"></svg>
+        <div class="mapctl">
+          <button type="button" id="zin" aria-label="Zoom inn">+</button>
+          <button type="button" id="zout" aria-label="Zoom ut">−</button>
+          <button type="button" class="fit" id="zfit" aria-label="Vis alle boliger">ALLE</button>
+        </div>
+        <div class="legend" id="legend"></div>
+        <div class="tip" id="tip" hidden></div>
+      </div>
+    </div>
+
+    <aside class="side">
+      <div class="sidehead" id="sidehead">
+        <h2>Boliger</h2><span class="count num" id="count"></span>
+        <span class="spacer"></span>
+        <label for="sort" class="count">Sorter</label>
+        <select id="sort">
+          <option value="score">Score</option>
+          <option value="nyeste">Nyeste</option>
+          <option value="pris">Totalpris</option>
+          <option value="krm2">Kr/m²</option>
+        </select>
+      </div>
+      <div class="scroll" id="sidescroll">
+        <div class="note" id="dbnote" hidden></div>
+        <div class="list" id="list"></div>
+      </div>
+    </aside>
+  </main>
+  <div class="detailwrap" id="detailwrap" hidden></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
+<script>
+(() => {
+  "use strict";
+  const BYDELER = ["Arna", "Bergenhus", "Fana", "Fyllingsdalen", "Laksevåg", "Ytrebygda", "Årstad", "Åsane"];
+  const STATUSER = { ny: "Ny", interessert: "Interessert", visning: "Visning", bud: "Bud", avvist: "Avvist", solgt: "Solgt" };
+  const DELSCORER = [["pris", "Pris"], ["tilstand", "Tilstand"], ["okonomi", "Økonomi i laget"], ["beliggenhet", "Beliggenhet"], ["kriterier", "Mine kriterier"]];
+  const $ = (id) => document.getElementById(id);
+  const nf = new Intl.NumberFormat("nb-NO");
+  const kr = (v) => v == null || isNaN(v) ? "–" : nf.format(Math.round(v)) + " kr";
+  const mill = (v) => v == null || isNaN(v) ? "–" : (v / 1e6).toLocaleString("nb-NO", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " mill";
+  const m2 = (v) => v == null ? "–" : nf.format(v) + " m²";
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const css = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem("boligjakt:" + k); return v == null ? d : JSON.parse(v); } catch { return d; } },
+    set(k, v) { try { localStorage.setItem("boligjakt:" + k, JSON.stringify(v)); } catch {} },
+  };
+
+  // ---------- tilstand ----------
+  const S = {
+    boliger: new Map(),
+    arbeid: [],
+    sel: null,
+    hover: null,
+    sort: store.get("sort", "score"),
+    colorby: store.get("colorby", "score"),
+    f: Object.assign({ bydeler: [], pmin: "", pmax: "", sov: "0", bra: "0", eie: "", status: "aktive", smin: "0", notg3: false, favonly: false, maks: {} }, store.get("filter", {})),
+    db: null,
+    loaded: false,
+  };
+
+  // ---------- hjelpere for data ----------
+  const totalpris = (b) => b.totalpris ?? ((b.prisantydning ?? 0) + (b.fellesgjeld ?? 0) || null);
+  const krm2 = (b) => b.krPerM2 ?? (b.braI && totalpris(b) ? Math.round(totalpris(b) / b.braI) : null);
+  const reise = (b, id) => {
+    const p = b.pendling && b.pendling[id];
+    if (!p) return null;
+    const v = [p.kollektivMin, p.gangMin].filter((x) => typeof x === "number");
+    return v.length ? Math.min(...v) : null;
+  };
+  const scoreColor = (s) => s == null ? css("--none") : s >= 75 ? css("--good") : s >= 55 ? css("--mid") : css("--bad");
+  const minColor = (m) => m == null ? css("--none") : m <= 15 ? css("--good") : m <= 30 ? css("--mid") : css("--bad");
+  let krm2Scale = null;
+  function colorFor(b) {
+    if (S.colorby === "score") return scoreColor(b.score);
+    if (S.colorby === "krm2") { const v = krm2(b); return v == null || !krm2Scale ? css("--none") : krm2Scale(v); }
+    if (S.colorby.startsWith("reise:")) return minColor(reise(b, S.colorby.slice(6)));
+    return css("--none");
+  }
+  const faded = (b) => b.status === "avvist" || b.status === "solgt";
+
+  function passes(b) {
+    const f = S.f;
+    if (f.bydeler.length && !f.bydeler.includes(b.bydel)) return false;
+    const tp = totalpris(b);
+    if (f.pmin !== "" && (tp == null || tp < +f.pmin * 1e6)) return false;
+    if (f.pmax !== "" && (tp == null || tp > +f.pmax * 1e6)) return false;
+    if (+f.sov && (b.soverom ?? 0) < +f.sov) return false;
+    if (+f.bra && (b.braI ?? 0) < +f.bra) return false;
+    if (f.eie && b.eieform !== f.eie) return false;
+    const st = b.status || "ny";
+    if (f.status === "aktive" && (st === "avvist" || st === "solgt")) return false;
+    if (f.status && f.status !== "aktive" && st !== f.status) return false;
+    if (+f.smin && (b.score ?? 0) < +f.smin) return false;
+    if (f.notg3 && (b.tg3 || []).length) return false;
+    if (f.favonly && !b.favoritt) return false;
+    for (const [id, maks] of Object.entries(f.maks || {})) {
+      if (!+maks) continue;
+      const r = reise(b, id);
+      if (r == null || r > +maks) return false;
+    }
+    return true;
+  }
+  function visible() {
+    const arr = [...S.boliger.values()].filter(passes);
+    const by = {
+      score: (a, b) => (b.score ?? -1) - (a.score ?? -1),
+      nyeste: (a, b) => String(b.lagtTil || "").localeCompare(String(a.lagtTil || "")),
+      pris: (a, b) => (totalpris(a) ?? 1e12) - (totalpris(b) ?? 1e12),
+      krm2: (a, b) => (krm2(a) ?? 1e12) - (krm2(b) ?? 1e12),
+    };
+    let cmp = by[S.sort];
+    if (!cmp && S.sort.startsWith("reise:")) { const id = S.sort.slice(6); cmp = (a, b) => (reise(a, id) ?? 1e9) - (reise(b, id) ?? 1e9); }
+    return arr.sort(cmp || by.score);
+  }
+
+  // ---------- kart ----------
+  const svg = d3.select("#svg");
+  const VW = 1000, VH = 1000;
+  let projection = null, zoom = null, T = d3.zoomIdentity;
+  const gBase = svg.append("g");
+  const gOver = svg.append("g");
+  const gLabels = gOver.append("g");
+  const gWork = gOver.append("g");
+  const gDots = gOver.append("g");
+  let veiSel = null, bydelSel = null, bydelFeats = [], steder = [];
+  const tip = $("tip");
+
+  async function loadMap() {
+    let topo;
+    try {
+      const r = await fetch("bergen.topo.json");
+      topo = await r.json();
+    } catch (e) {
+      $("maploading").textContent = "Fant ikke kartdataene (bergen.topo.json).";
+      return;
+    }
+    const feats = [];
+    for (const o of Object.values(topo.objects)) {
+      const fc = topojson.feature(topo, o);
+      feats.push(...(fc.features || [fc]));
+    }
+    const lag = (n) => feats.filter((f) => f.properties.lag === n);
+    bydelFeats = lag("bydel");
+    steder = lag("sted");
+    projection = d3.geoMercator().fitSize([VW, VH], { type: "FeatureCollection", features: bydelFeats });
+    const path = d3.geoPath(projection);
+    const draw = (cls, fs) => gBase.append("g").selectAll("path").data(fs).join("path").attr("class", cls).attr("d", path);
+    draw("l-nabo", lag("nabo"));
+    draw("l-land", lag("land"));
+    draw("l-skog", lag("skog"));
+    draw("l-by", lag("by"));
+    draw("l-vann", lag("vann"));
+    const veier = lag("vei").sort((a, b) => "kfre".indexOf(a.properties.klasse) - "kfre".indexOf(b.properties.klasse));
+    veiSel = draw((d) => "l-vei " + d.properties.klasse, veier);
+    draw("l-bane", lag("bane"));
+    bydelSel = draw("l-bydel", bydelFeats);
+    $("maploading").remove();
+
+    zoom = d3.zoom().scaleExtent([0.6, 60]).on("zoom", (ev) => { T = ev.transform; gBase.attr("transform", T); restyle(); placeOverlay(); hideTip(); });
+    svg.call(zoom).on("dblclick.zoom", null);
+    fitTo(null, false);
+    renderAll();
+  }
+
+  function restyle() {
+    if (!veiSel) return;
+    const k = T.k;
+    const w = { e: 2.2, r: 2.0, f: 1.5, k: 1.0 };
+    veiSel.attr("stroke-width", (d) => (w[d.properties.klasse] * Math.pow(Math.min(k, 30), 0.42)) / k)
+      .attr("display", (d) => d.properties.klasse === "k" && k < 3 ? "none" : null);
+    bydelSel.classed("sel", (d) => S.f.bydeler.includes(d.properties.navn));
+  }
+
+  const P = (lon, lat) => { const p = projection([lon, lat]); return T.apply(p); };
+
+  function placeOverlay() {
+    if (!projection) return;
+    const k = T.k;
+    // bydelsnavn ved lav zoom, stedsnavn ved høyere
+    const bl = gLabels.selectAll("text.lbl-bydel").data(k < 7 ? bydelFeats : [], (d) => d.properties.navn);
+    bl.join("text").attr("class", "lbl-bydel").text((d) => d.properties.navn)
+      .attr("x", (d) => P(d.properties.lx, d.properties.ly)[0]).attr("y", (d) => P(d.properties.lx, d.properties.ly)[1]);
+    const sl = gLabels.selectAll("text.lbl-sted").data(k >= 2.6 ? steder : [], (d) => d.properties.navn);
+    sl.join("text").attr("class", "lbl-sted").text((d) => d.properties.navn)
+      .attr("x", (d) => P(...d.geometry.coordinates)[0] + 5).attr("y", (d) => P(...d.geometry.coordinates)[1] + 4);
+
+    const wk = gWork.selectAll("g.work").data(S.arbeid, (d) => d.id);
+    const we = wk.join((en) => {
+      const g = en.append("g").attr("class", "work");
+      g.append("rect").attr("x", -9).attr("y", -9).attr("width", 18).attr("height", 18).attr("rx", 4).attr("transform", "rotate(45)");
+      g.append("text");
+      g.append("text").attr("class", "worklbl").attr("x", 14).attr("y", 4).style("text-anchor", "start");
+      g.append("title");
+      return g;
+    });
+    we.attr("transform", (d) => `translate(${P(d.lon, d.lat)})`);
+    we.select("text:not(.worklbl)").text((d) => (d.navn || "?").slice(0, 1).toUpperCase());
+    we.select(".worklbl").text((d) => d.navn).attr("display", k >= 2 ? null : "none");
+    we.select("title").text((d) => `${d.navn}: ${d.adresse}`);
+
+    gDots.selectAll("g.m").attr("transform", (d) => `translate(${P(d.lon, d.lat)})`);
+  }
+
+  function renderDots(list) {
+    if (!projection) return;
+    const pts = list.filter((b) => typeof b.lat === "number" && typeof b.lon === "number")
+      .sort((a, b) => (a.id === S.sel) - (b.id === S.sel) || (a.score ?? 0) - (b.score ?? 0));
+    const g = gDots.selectAll("g.m").data(pts, (d) => d.id).join((en) => {
+      const m = en.append("g").attr("class", "m");
+      m.append("circle").attr("class", "selring").attr("r", 13);
+      m.append("circle").attr("class", "ring").attr("r", 10.5);
+      m.append("circle").attr("class", "dot").attr("r", 7.5)
+        .on("mouseenter", (ev, d) => { S.hover = d.id; showTip(ev, d); highlightCard(d.id, true); })
+        .on("mousemove", (ev, d) => showTip(ev, d))
+        .on("mouseleave", (ev, d) => { S.hover = null; hideTip(); highlightCard(d.id, false); })
+        .on("click", (ev, d) => { ev.stopPropagation(); select(d.id); });
+      return m;
+    });
+    g.order();
+    g.select(".dot").attr("fill", colorFor).classed("fade", faded).attr("r", (d) => d.id === S.sel ? 9 : 7.5);
+    g.select(".ring").attr("display", (d) => d.favoritt ? null : "none");
+    g.select(".selring").attr("display", (d) => d.id === S.sel ? null : "none");
+    placeOverlay();
+  }
+
+  function fitTo(list, animate = true) {
+    if (!projection) return;
+    const el = $("map"), w = el.clientWidth, h = el.clientHeight;
+    let pts = (list || []).filter((b) => typeof b.lat === "number").map((b) => [b.lon, b.lat]);
+    pts = pts.concat(S.arbeid.map((a) => [a.lon, a.lat]));
+    if (pts.length < 2) pts = [[5.28, 60.355], [5.39, 60.415]]; // Bergen sentrum
+    const xy = pts.map((p) => projection(p));
+    let [x0, x1] = d3.extent(xy, (p) => p[0]), [y0, y1] = d3.extent(xy, (p) => p[1]);
+    const pad = 60, minSpan = 40;
+    if (x1 - x0 < minSpan) { const c = (x0 + x1) / 2; x0 = c - minSpan / 2; x1 = c + minSpan / 2; }
+    if (y1 - y0 < minSpan) { const c = (y0 + y1) / 2; y0 = c - minSpan / 2; y1 = c + minSpan / 2; }
+    const k = Math.min(60, Math.max(0.6, Math.min((w - pad * 2) / (x1 - x0), (h - pad * 2) / (y1 - y0))));
+    const t = d3.zoomIdentity.translate(w / 2 - k * (x0 + x1) / 2, h / 2 - k * (y0 + y1) / 2).scale(k);
+    (animate && !matchMedia("(prefers-reduced-motion: reduce)").matches ? svg.transition().duration(450) : svg).call(zoom.transform, t);
+  }
+  $("zin").onclick = () => zoom && svg.transition().duration(200).call(zoom.scaleBy, 1.6);
+  $("zout").onclick = () => zoom && svg.transition().duration(200).call(zoom.scaleBy, 1 / 1.6);
+  $("zfit").onclick = () => fitTo(visible());
+  svg.on("click", () => hideTip());
+
+  function showTip(ev, b) {
+    const box = $("map").getBoundingClientRect();
+    const rows = [
+      ["Totalpris", mill(totalpris(b))],
+      ["BRA-i", m2(b.braI)],
+      ["Soverom", b.soverom ?? "–"],
+      ["Kr/m²", krm2(b) ? nf.format(krm2(b)) : "–"],
+      ...S.arbeid.map((a) => [a.navn, fmtMin(reise(b, a.id))]),
+    ];
+    tip.innerHTML = `<h4>${esc(b.adresse || b.tittel || "Ukjent adresse")}</h4>
+      <div class="meta">${esc(b.bydel || "")}${b.eieform ? " · " + esc(b.eieform) : ""}${b.score != null ? ` · <span class="pill score" style="background:${scoreColor(b.score)}">${b.score}</span>` : ""}</div>
+      <dl>${rows.map(([k, v]) => `<dt>${esc(k)}</dt><dd class="num">${esc(v)}</dd>`).join("")}</dl>`;
+    tip.hidden = false;
+    let x = ev.clientX - box.left + 14, y = ev.clientY - box.top + 14;
+    if (x + 260 > box.width) x = ev.clientX - box.left - 264;
+    if (y + tip.offsetHeight > box.height - 8) y = Math.max(8, box.height - tip.offsetHeight - 8);
+    tip.style.left = x + "px"; tip.style.top = y + "px";
+  }
+  function hideTip() { tip.hidden = true; }
+  const fmtMin = (m) => m == null ? "–" : m + " min";
+
+  function renderLegend(list) {
+    const L = $("legend");
+    let rows = "";
+    if (S.colorby === "score") {
+      rows = [["--good", "75–100 god"], ["--mid", "55–74 middels"], ["--bad", "under 55 svak"]]
+        .map(([c, t]) => `<div class="row"><span class="sw" style="background:var(${c})"></span>${t}</div>`).join("");
+      L.innerHTML = `<div class="t">Score</div>${rows}`;
+    } else if (S.colorby === "krm2") {
+      if (!krm2Scale) { L.innerHTML = `<div class="t">Kr/m²</div><div class="row">Ingen data ennå</div>`; return; }
+      const th = krm2Scale.quantiles ? krm2Scale.quantiles() : [];
+      const r = krm2Scale.range();
+      const lab = (i) => i === 0 ? `under ${nf.format(Math.round(th[0] / 1000))}k` : i === r.length - 1 ? `over ${nf.format(Math.round(th[i - 1] / 1000))}k` : `${nf.format(Math.round(th[i - 1] / 1000))}–${nf.format(Math.round(th[i] / 1000))}k`;
+      rows = r.map((c, i) => th.length >= i ? `<div class="row"><span class="sw" style="background:${c}"></span>${lab(i)}</div>` : "").join("");
+      L.innerHTML = `<div class="t">Kr/m² (BRA-i)</div>${rows}`;
+    } else {
+      const a = S.arbeid.find((x) => "reise:" + x.id === S.colorby);
+      rows = [["--good", "15 min eller mindre"], ["--mid", "16–30 min"], ["--bad", "over 30 min"]]
+        .map(([c, t]) => `<div class="row"><span class="sw" style="background:var(${c})"></span>${t}</div>`).join("");
+      L.innerHTML = `<div class="t">Reisetid ${esc(a ? a.navn : "")}</div>${rows}<div class="src">Raskeste av kollektiv og gange</div>`;
+    }
+    L.innerHTML += S.arbeid.length ? `<div class="row work-row" style="margin-top:4px"><span class="sw" style="background:var(--ink);border-radius:2px;transform:rotate(45deg)"></span>Arbeidssted</div>` : "";
+  }
+
+  // ---------- liste ----------
+  function cardHTML(b) {
+    const st = b.status || "ny";
+    const tg3 = (b.tg3 || []).length;
+    const comm = S.arbeid.map((a) => {
+      const p = b.pendling && b.pendling[a.id];
+      if (!p) return "";
+      const m = reise(b, a.id);
+      return `<span class="pill soft"><span class="sw" style="background:${minColor(m)}"></span>${esc(a.navn)} <span class="num">${fmtMin(m)}</span></span>`;
+    }).join("");
+    return `<button type="button" class="card${faded(b) ? " fade" : ""}${S.hover === b.id ? " hl" : ""}" data-id="${esc(b.id)}">
+      <span class="adr">${b.favoritt ? '<span class="fav" aria-label="Favoritt">★</span> ' : ""}${esc(b.adresse || b.tittel || "Ukjent adresse")}</span>
+      <span>${b.score != null ? `<span class="pill score" style="background:${scoreColor(b.score)}">${b.score}</span>` : `<span class="pill soft">Ikke analysert</span>`}</span>
+      <span class="sub">${esc(b.bydel || "Ukjent bydel")}${b.eieform ? " · " + esc(b.eieform) : ""}${st !== "ny" ? ` · <span class="pill status">${esc(STATUSER[st] || st)}</span>` : ""}${tg3 ? ` · <span class="pill warn">${tg3}× TG3</span>` : ""}</span>
+      <span class="facts"><span class="num">${mill(totalpris(b))}</span><span class="num">${m2(b.braI)}</span><span>${b.soverom ?? "–"} sov.</span><span class="num">${krm2(b) ? nf.format(krm2(b)) + " kr/m²" : ""}</span></span>
+      ${comm ? `<span class="commute">${comm}</span>` : ""}
+    </button>`;
+  }
+  function highlightCard(id, on) {
+    const el = document.querySelector(`.card[data-id="${CSS.escape(id)}"]`);
+    if (el) el.classList.toggle("hl", on);
+  }
+  function renderList(list) {
+    const total = S.boliger.size;
+    $("count").textContent = total ? `${list.length} av ${total}` : "";
+    const L = $("list");
+    if (!S.loaded) { L.innerHTML = `<div class="empty"><p>Henter boliger …</p></div>`; return; }
+    if (!total) {
+      L.innerHTML = `<div class="empty"><h3>Ingen boliger ennå</h3>
+        <p>Kartet fylles etter hvert som du analyserer boliger.</p>
+        <ol><li>Åpne en økt i Claude Code med repoet <code>bolig-bergen</code>.</li>
+        <li>Skriv <code>/boliganalyse</code> og lim inn Finn-lenken.</li>
+        <li>Legg ved salgsoppgaven som PDF.</li></ol>
+        <p>Boligen dukker opp her med prikk på kartet, score og reisetid.</p></div>`;
+      return;
+    }
+    if (!list.length) {
+      L.innerHTML = `<div class="empty"><h3>Ingen boliger passer filtrene</h3><p><button type="button" class="linkbtn" data-reset>Nullstill filtrene</button></p></div>`;
+      return;
+    }
+    L.innerHTML = list.map(cardHTML).join("");
+  }
+  $("list").addEventListener("click", (e) => {
+    if (e.target.closest("[data-reset]")) { resetFilters(); return; }
+    const c = e.target.closest(".card");
+    if (c) select(c.dataset.id, true);
+  });
+  $("list").addEventListener("mouseover", (e) => {
+    const c = e.target.closest(".card");
+    const id = c ? c.dataset.id : null;
+    if (id === S.hover) return;
+    S.hover = id;
+    gDots.selectAll("g.m").select(".dot").attr("r", (d) => d.id === id || d.id === S.sel ? 9.5 : 7.5);
+  });
+  $("list").addEventListener("mouseleave", () => { S.hover = null; gDots.selectAll("g.m").select(".dot").attr("r", (d) => d.id === S.sel ? 9 : 7.5); });
+
+  // ---------- detalj ----------
+  function select(id, pan = false) {
+    S.sel = id;
+    hideTip();
+    renderAll();
+    const b = S.boliger.get(id);
+    if (pan && b && typeof b.lat === "number" && zoom) {
+      const el = $("map"), k = Math.max(T.k, 6), p = projection([b.lon, b.lat]);
+      svg.transition().duration(400).call(zoom.transform, d3.zoomIdentity.translate(el.clientWidth / 2 - k * p[0], el.clientHeight / 2 - k * p[1]).scale(k));
+    }
+  }
+  function closeDetail() { S.sel = null; renderAll(); }
+
+  function renderDetail() {
+    const wrap = $("detailwrap");
+    const b = S.sel && S.boliger.get(S.sel);
+    const side = $("sidescroll"), head = $("sidehead");
+    const mobile = matchMedia("(max-width: 860px)").matches;
+    if (!b) {
+      wrap.hidden = true; wrap.innerHTML = "";
+      head.hidden = false;
+      const d = side.querySelector(".detail"); if (d) d.remove();
+      $("list").hidden = false;
+      return;
+    }
+    const html = detailHTML(b);
+    if (mobile) {
+      wrap.innerHTML = html; wrap.hidden = false;
+      head.hidden = false; $("list").hidden = false;
+      const d = side.querySelector(".detail"); if (d) d.remove();
+      bindDetail(wrap, b);
+    } else {
+      wrap.hidden = true; wrap.innerHTML = "";
+      head.hidden = true; $("list").hidden = true;
+      let d = side.querySelector(".detail");
+      const keep = d && d.dataset.id === b.id ? side.scrollTop : 0;
+      if (d) d.remove();
+      side.insertAdjacentHTML("beforeend", html);
+      side.scrollTop = keep;
+      bindDetail(side, b);
+    }
+  }
+
+  function detailHTML(b) {
+    const tp = totalpris(b);
+    const kv = [
+      ["Totalpris", mill(tp)], ["Prisantydning", kr(b.prisantydning)],
+      ["Fellesgjeld", kr(b.fellesgjeld)], ["Felleskost./mnd", kr(b.fellesMnd)],
+      ["Kr/m² (BRA-i)", krm2(b) ? nf.format(krm2(b)) + " kr" : "–"], ["Månedskostnad (est.)", kr(b.mndKostnad)],
+      ["BRA-i / BRA", `${b.braI ?? "–"} / ${b.bra ?? "–"} m²`], ["Soverom / rom", `${b.soverom ?? "–"} / ${b.rom ?? "–"}`],
+      ["Etasje", b.etasje ?? "–"], ["Byggeår", b.byggeaar ?? "–"],
+      ["Eieform", b.eieform || "–"], ["Energimerke", b.energimerke || "–"],
+      ["Omkostninger", kr(b.omkostninger)], ["Kommunale avg./år", kr(b.kommunaleAvgAar)],
+    ];
+    const extras = [b.heis ? "Heis" : null, b.balkong ? "Balkong/terrasse" : null, b.parkering ? "Parkering: " + b.parkering : null].filter(Boolean);
+    const commRows = S.arbeid.map((a) => {
+      const p = (b.pendling || {})[a.id] || {};
+      return `<tr><td><b>${esc(a.navn)}</b><div class="route">${esc(p.rute || "")}${p.bytter ? ` · ${p.bytter} bytte${p.bytter > 1 ? "r" : ""}` : ""}</div></td>
+        <td class="r num">${fmtMin(p.kollektivMin)}</td><td class="r num">${fmtMin(p.gangMin)}</td><td class="r num">${fmtMin(p.sykkelMin)}</td></tr>`;
+    }).join("");
+    const list = (arr, cls = "plain") => (arr && arr.length) ? `<ul class="${cls}">${arr.map((x) => `<li>${esc(typeof x === "string" ? x : x.tekst || JSON.stringify(x))}</li>`).join("")}</ul>` : `<p class="prose" style="color:var(--muted)">Ingen registrert.</p>`;
+    const tgRows = [...(b.tg3 || []).map((t) => ["3", t]), ...(b.tg2 || []).map((t) => ["2", t])]
+      .map(([g, t]) => `<div class="tgrow"><span class="tgbadge tg${g}">TG${g}</span><span><b>${esc(t.rom || t.del || "")}</b>${t.rom ? " – " : ""}${esc(t.tekst || "")}</span><span class="num">${t.estimat ? kr(t.estimat) : ""}</span></div>`).join("");
+    const bl = b.borettslag || {};
+    const blkv = [
+      ["Navn", bl.navn], ["Type", bl.type], ["Enheter", bl.antallEnheter],
+      ["Fellesgjeld totalt", bl.fellesgjeldTotal != null ? kr(bl.fellesgjeldTotal) : null],
+      ["Avdragsfritt til", bl.avdragsfriTil], ["Forretningsfører", bl.forretningsforer],
+    ].filter(([, v]) => v != null && v !== "");
+    const statusOpts = Object.entries(STATUSER).map(([v, t]) => `<option value="${v}"${(b.status || "ny") === v ? " selected" : ""}>${t}</option>`).join("");
+    return `<div class="detail" data-id="${esc(b.id)}">
+      <div class="dhead">
+        <button type="button" class="linkbtn back" data-close>← Tilbake til listen</button>
+        <h2>${esc(b.adresse || b.tittel || "Ukjent adresse")}</h2>
+        <div class="meta">${esc([b.bydel, b.postnr, b.boligtype].filter(Boolean).join(" · "))}</div>
+        ${b.tittel && b.tittel !== b.adresse ? `<div class="meta">«${esc(b.tittel)}»</div>` : ""}
+        <div class="actions">
+          ${b.url ? `<a class="btn primary" href="${esc(b.url)}" target="_blank" rel="noopener">Åpne på Finn ↗</a>` : ""}
+          <button type="button" class="btn" data-fav aria-pressed="${b.favoritt ? "true" : "false"}">${b.favoritt ? "★ Favoritt" : "☆ Favoritt"}</button>
+          <label class="chk" for="dstatus">Status <select id="dstatus" data-status>${statusOpts}</select></label>
+        </div>
+      </div>
+      <section class="blk"><h3>Vurdering</h3>
+        <div class="scorebox">
+          <div class="bigscore" style="background:${scoreColor(b.score)}">${b.score ?? "–"}</div>
+          <div class="bars">${DELSCORER.map(([k, t]) => { const v = (b.delscorer || {})[k]; return `<div class="bar"><span>${t}</span><span class="track"><span class="fill" style="display:block;width:${v ?? 0}%;background:${scoreColor(v)}"></span></span><span class="num">${v ?? "–"}</span></div>`; }).join("")}</div>
+        </div>
+        ${b.oppsummering ? `<p class="prose">${esc(b.oppsummering)}</p>` : ""}
+      </section>
+      ${(b.rodeFlagg || []).length ? `<section class="blk"><h3>Røde flagg</h3>${list(b.rodeFlagg, "flags")}</section>` : ""}
+      <section class="blk"><h3>Nøkkeltall</h3>
+        <div class="kv">${kv.map(([k, v]) => `<div><span>${esc(k)}</span><b class="num">${esc(v)}</b></div>`).join("")}</div>
+        ${extras.length ? `<div class="meta" style="color:var(--muted)">${esc(extras.join(" · "))}</div>` : ""}
+      </section>
+      ${S.arbeid.length ? `<section class="blk"><h3>Reisetid til jobb</h3>
+        <div style="overflow-x:auto"><table class="commtab"><thead><tr><th></th><th class="r">Kollektiv</th><th class="r">Gange</th><th class="r">Sykkel</th></tr></thead><tbody>${commRows}</tbody></table></div>
+        <div class="meta" style="color:var(--muted);font-size:12px">Oppmøte kl. 08:00 en tirsdag, dør til dør. Kilde: Entur (Skyss-ruter).</div></section>` : ""}
+      <section class="blk"><div class="cols2">
+        <div><h3>Styrker</h3>${list(b.styrker)}</div>
+        <div><h3>Svakheter</h3>${list(b.svakheter)}</div></div></section>
+      <section class="blk"><h3>Tilstand</h3>
+        ${tgRows ? `<div class="tg">${tgRows}</div>` : `<p class="prose" style="color:var(--muted)">Ingen TG2/TG3 registrert.</p>`}
+        ${b.oppussingEstimat ? `<div>Anslått oppussingsbehov: <b class="num">${kr(b.oppussingEstimat)}</b></div>` : ""}
+      </section>
+      ${blkv.length || bl.vurdering || (bl.planlagteTiltak || []).length ? `<section class="blk"><h3>Borettslag / sameie</h3>
+        ${blkv.length ? `<div class="kv">${blkv.map(([k, v]) => `<div><span>${esc(k)}</span><b>${esc(v)}</b></div>`).join("")}</div>` : ""}
+        ${bl.vurdering ? `<p class="prose">${esc(bl.vurdering)}</p>` : ""}
+        ${(bl.planlagteTiltak || []).length ? `<div><b>Planlagte tiltak</b>${list(bl.planlagteTiltak)}</div>` : ""}
+      </section>` : ""}
+      <section class="blk"><h3>Spørsmål til megler</h3>${list(b.sporsmal)}</section>
+      ${(b.visninger || []).length ? `<section class="blk"><h3>Visninger</h3>${list(b.visninger.map((v) => typeof v === "string" ? v : [v.dato, v.tid].filter(Boolean).join(" ")))}</section>` : ""}
+      <section class="blk"><h3>Mitt notat</h3>
+        <textarea id="dnotat" data-notat placeholder="Inntrykk fra visning, spørsmål, budstrategi …">${esc(b.notat || "")}</textarea>
+        <div class="saved" data-saved></div>
+      </section>
+      <section class="blk"><div class="meta" style="color:var(--muted);font-size:12px">Finn-kode ${esc(b.finnkode || b.id)} · lagt til ${esc((b.lagtTil || "").slice(0, 10))}${b.analysertDato ? " · analysert " + esc(String(b.analysertDato).slice(0, 10)) : ""}</div></section>
+    </div>`;
+  }
+
+  let notatTimer = null;
+  function bindDetail(root, b) {
+    root.querySelector("[data-close]").onclick = closeDetail;
+    const canWrite = !!S.db;
+    const saved = root.querySelector("[data-saved]");
+    const write = async (patch, msg) => {
+      if (!S.db) return;
+      try { await S.db.collection("leiligheter").doc(b.id).update(patch); if (saved) saved.textContent = msg; }
+      catch (e) { if (saved) saved.textContent = e && e.code === "invalid_argument" ? "Du har ikke tilgang til å endre denne oversikten." : "Kunne ikke lagre. Prøv igjen."; }
+    };
+    const fav = root.querySelector("[data-fav]");
+    fav.disabled = !canWrite;
+    fav.onclick = () => write({ favoritt: !b.favoritt }, "Lagret");
+    const st = root.querySelector("[data-status]");
+    st.disabled = !canWrite;
+    st.onchange = () => write({ status: st.value }, "Status lagret");
+    const n = root.querySelector("[data-notat]");
+    n.disabled = !canWrite;
+    n.oninput = () => { if (saved) saved.textContent = "Skriver …"; clearTimeout(notatTimer); notatTimer = setTimeout(() => write({ notat: n.value }, "Notat lagret"), 900); };
+  }
+
+  // ---------- filtre ----------
+  function buildFilterUI() {
+    $("bydelopts").innerHTML = BYDELER.map((n, i) => `<label for="bd${i}"><input type="checkbox" id="bd${i}" value="${n}"${S.f.bydeler.includes(n) ? " checked" : ""}> ${n}</label>`).join("");
+    for (const id of ["pmin", "pmax", "sov", "bra", "eie", "status", "smin"]) $(id).value = S.f[id];
+    $("notg3").checked = !!S.f.notg3; $("favonly").checked = !!S.f.favonly;
+    $("sort").value = S.sort; $("colorby").value = S.colorby;
+    updateBydelSum();
+  }
+  function buildCommuteUI() {
+    $("commutefilters").innerHTML = S.arbeid.map((a) => `<label for="maks-${esc(a.id)}">${esc(a.navn)}</label>
+      <select id="maks-${esc(a.id)}" data-maks="${esc(a.id)}"><option value="0">Alle</option>${[10, 15, 20, 25, 30, 40, 45].map((m) => `<option value="${m}"${+(S.f.maks || {})[a.id] === m ? " selected" : ""}>≤ ${m} min</option>`).join("")}</select>`).join("");
+    const cb = $("colorby"), so = $("sort");
+    [...cb.querySelectorAll("[data-dyn]")].forEach((o) => o.remove());
+    [...so.querySelectorAll("[data-dyn]")].forEach((o) => o.remove());
+    for (const a of S.arbeid) {
+      cb.insertAdjacentHTML("beforeend", `<option data-dyn value="reise:${esc(a.id)}">Reisetid ${esc(a.navn)}</option>`);
+      so.insertAdjacentHTML("beforeend", `<option data-dyn value="reise:${esc(a.id)}">Reisetid ${esc(a.navn)}</option>`);
+    }
+    cb.value = S.colorby; if (cb.value !== S.colorby) { S.colorby = "score"; cb.value = "score"; }
+    so.value = S.sort; if (so.value !== S.sort) { S.sort = "score"; so.value = "score"; }
+  }
+  function updateBydelSum() {
+    const n = S.f.bydeler.length;
+    $("bydelsum").textContent = !n ? "Alle bydeler" : n === 1 ? S.f.bydeler[0] : `${n} bydeler`;
+    const active = [n > 0, S.f.pmin !== "", S.f.pmax !== "", +S.f.sov, +S.f.bra, S.f.eie, S.f.status !== "aktive", +S.f.smin, S.f.notg3, S.f.favonly, ...Object.values(S.f.maks || {}).map(Number)].filter(Boolean).length;
+    $("fcount").textContent = active ? `(${active})` : "";
+  }
+  $("filters").addEventListener("input", (e) => {
+    const t = e.target;
+    if (t.closest("#bydelopts")) S.f.bydeler = [...$("bydelopts").querySelectorAll("input:checked")].map((x) => x.value);
+    else if (t.dataset.maks) { S.f.maks = Object.assign({}, S.f.maks, { [t.dataset.maks]: t.value }); }
+    else if (t.id === "notg3" || t.id === "favonly") S.f[t.id] = t.checked;
+    else if (t.id in S.f) S.f[t.id] = t.value;
+    store.set("filter", S.f);
+    updateBydelSum();
+    renderAll();
+  });
+  $("filters").addEventListener("submit", (e) => e.preventDefault());
+  document.addEventListener("click", (e) => { const p = $("bydelpop"); if (p.open && !p.contains(e.target)) p.open = false; });
+  function resetFilters() {
+    S.f = { bydeler: [], pmin: "", pmax: "", sov: "0", bra: "0", eie: "", status: "aktive", smin: "0", notg3: false, favonly: false, maks: {} };
+    store.set("filter", S.f); buildFilterUI(); buildCommuteUI(); renderAll();
+  }
+  $("reset").onclick = resetFilters;
+  $("filtertoggle").onclick = () => { const f = $("filters"); const c = f.classList.toggle("collapsed"); $("filtertoggle").setAttribute("aria-expanded", String(!c)); };
+  $("sort").onchange = (e) => { S.sort = e.target.value; store.set("sort", S.sort); renderAll(); };
+  $("colorby").onchange = (e) => { S.colorby = e.target.value; store.set("colorby", S.colorby); renderAll(); };
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && S.sel) closeDetail(); });
+
+  // ---------- samlet rendering ----------
+  function renderAll() {
+    const all = [...S.boliger.values()];
+    const vals = all.map(krm2).filter((v) => v != null);
+    krm2Scale = vals.length >= 2 ? d3.scaleQuantile().domain(vals).range(d3.quantize(d3.interpolateRgb(css("--good"), css("--bad")), Math.min(5, vals.length))) : null;
+    const list = visible();
+    renderList(list);
+    renderDots(list);
+    renderLegend(list);
+    restyle();
+    renderDetail();
+    const ny = all.filter((b) => b.lagtTil && Date.now() - Date.parse(b.lagtTil) < 7 * 864e5).length;
+    $("summary").textContent = !S.loaded ? "Laster …" : all.length ? `${all.length} bolig${all.length === 1 ? "" : "er"} registrert${ny ? ` · ${ny} nye siste 7 dager` : ""}` : "Ingen boliger registrert ennå";
+  }
+
+  // ---------- database ----------
+  async function initDb() {
+    const note = $("dbnote");
+    let db = null;
+    try { db = await window.claude?.use?.("db"); } catch { db = null; }
+    if (!db) {
+      S.loaded = true;
+      note.hidden = false;
+      note.textContent = "Boligdataene er ikke tilgjengelige i denne visningen. Åpne oversikten på claude.ai mens du er logget inn.";
+      renderAll();
+      return;
+    }
+    S.db = db;
+    let timer = setTimeout(() => { note.hidden = false; note.textContent = "Får ikke kontakt med databasen ennå. Listen kan være utdatert."; S.loaded = true; renderAll(); }, 10000);
+    const done = () => { clearTimeout(timer); timer = null; };
+    db.doc("oppsett/arbeidssteder").onSnapshot((snap) => {
+      const d = snap.exists ? snap.data() : null;
+      S.arbeid = (d && Array.isArray(d.liste) ? d.liste : []).filter((a) => typeof a.lat === "number" && typeof a.lon === "number");
+      buildCommuteUI();
+      renderAll();
+    }, () => {});
+    let first = true;
+    db.collection("leiligheter").onSnapshot((snap) => {
+      S.boliger = new Map(snap.docs.map((d) => [d.id, Object.assign({ id: d.id }, d.data())]));
+      if (!snap.metadata.fromCache) { done(); note.hidden = true; }
+      S.loaded = true;
+      if (S.sel && !S.boliger.has(S.sel)) S.sel = null;
+      renderAll();
+      if (first && S.boliger.size) { first = false; fitTo(visible(), false); }
+    }, (e) => {
+      done(); S.loaded = true; note.hidden = false;
+      note.textContent = e && e.code === "revoked" ? "Tilgangen til boligdataene er endret." : "Mistet kontakten med databasen. Last inn siden på nytt for å prøve igjen.";
+      renderAll();
+    });
+  }
+
+  buildFilterUI();
+  renderAll();
+  loadMap();
+  initDb();
+  let lastW = 0;
+  new ResizeObserver(() => { const w = $("map").clientWidth; if (Math.abs(w - lastW) > 40 && lastW) { renderDetail(); } lastW = w; }).observe($("map"));
+})();
+</script>
