@@ -20,5 +20,5 @@ Privat verktøy for å vurdere leiligheter i Bergen. Svar på norsk (bokmål).
 ## Nettverk
 Skymiljøet `bolig-bergen` slipper til `www.finn.no`, `ws.geonorge.no`, `api.entur.io` og `nedlasting.geonorge.no`.
 Finn blokkerer WebFetch og `curl` fra skyen (DataDome). Ikke prøv å omgå det.
-Les Finn gjennom nettleseren i Claude-appen når økten er koblet til Håkons PC (`Claude_Browser`-verktøyene). Ellers brukes salgsoppgaven og skjermbilder.
+Les Finn gjennom Håkons egen nettleser når verktøyene finnes: Claude i Chrome (`claude-in-chrome`) eller nettleseren i Claude-appen (`Claude_Browser`). Ellers brukes salgsoppgaven og skjermbilder.
 Håkon (arbeidssted-id `meg`) og samboeren Camilla (`samboer`) er brukerne.

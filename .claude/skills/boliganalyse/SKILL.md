@@ -1,7 +1,7 @@
 ---
 name: boliganalyse
 description: Analyserer en leilighet i Bergen fra Finn-lenke og salgsoppgave (PDF), regner ut nøkkeltall, reisetid til jobb og score, og lagrer resultatet i oversikten «Boligjakt Bergen». Bruk når brukeren sender en Finn-annonse, et skjermbilde av en annonse og/eller en salgsoppgave, skriver /boliganalyse, eller ber om å analysere, fullføre, oppdatere eller sammenligne boliger i oversikten.
-argument-hint: <finn-lenke> (+ full salgsoppgave som PDF; skjermbilde av annonsen hvis økten ikke er startet fra Claude-appen på PC-en)
+argument-hint: <finn-lenke> (+ full salgsoppgave som PDF; skjermbilde av annonsen hvis Claude ikke har tilgang til nettleseren din)
 ---
 
 # Boliganalyse
@@ -26,7 +26,7 @@ Arbeidsfiler (annonsetekst, PDF-tekst, dokument-JSON) legges i scratchpad-mappen
 
 ## Kilder, i prioritert rekkefølge
 1. **Salgsoppgaven** (PDF): fasit for alt den dekker. Best er full salgsoppgave fra meglerens nedlastingsknapp («Last ned salgsoppgave / prospekt»), ikke bare vedleggspakken fra Finn.
-2. **Finn-annonsen og meglerens digitale salgsoppgave**, lest gjennom nettleseren i Claude-appen på Håkons PC (se steg 2). Finn blokkerer WebFetch og `curl` fra skyen, men ikke en vanlig nettleser.
+2. **Finn-annonsen og meglerens digitale salgsoppgave**, lest gjennom Håkons egen nettleser: Claude i Chrome eller nettleseren i Claude-appen (se steg 2). Finn blokkerer WebFetch og `curl` fra skyen, men ikke en vanlig nettleser.
 3. **Skjermbilde eller innlimt tekst** fra brukeren: brukes når 1 og 2 ikke gir tallene.
 
 Ved avvik mellom kildene gjelder salgsoppgaven. Nevn avviket.
@@ -44,15 +44,21 @@ Feltene du skal hente ut (brukes av alle metodene under):
 
 Har brukeren allerede lagt ved skjermbilde eller limt inn annonsetekst, les tallene derfra først (bildene leses direkte). Prøv deretter metodene under i rekkefølge, og stopp når du har tallene.
 
-**A. Nettleseren i Claude-appen** (bare hvis verktøyene finnes i økten)
-1. Se etter verktøy med prefikset `mcp__remote-devices__Claude_Browser__` (skyøkt koblet til Håkons PC) eller `mcp__Claude_Browser__` (økt som kjører i appen). Finnes bare `enable__mcp__remote-devices__Claude_Browser`, kall den først.
-2. Last alle nettleserverktøyene med én ToolSearch på prefikset (`max_results: 64`). Les gjerne skillen `built-in-browser` hvis den er tilgjengelig.
-3. `preview_start` med Finn-lenken (gir en ny fane og `tabId`), og deretter `get_page_text` med den `tabId`-en.
-4. Svarer et verktøy at Finn ikke er godkjent ennå, og `request_access` finnes: kall den for `https://www.finn.no` med scope `site`, vent på svaret, og prøv igjen. Avslår Håkon, gå videre til B.
-5. Viser siden en bot-sjekk eller en samtykkedialog (informasjonskapsler): kall `tabs_context`, og be Håkon klikke den bort selv i nettleserpanelet i Claude-appen. Panelet vises med Ctrl+Shift+B (Windows) / Cmd+Shift+B (Mac). Følger han ikke samtalen i appen på den PC-en, må han åpne den der først. Prøv så `get_page_text` én gang til.
-6. Finn lenken til meglerens fulle eller digitale salgsoppgave på siden. Mangler PDF-en økonomidelen, åpne den lenken i samme fane med `navigate` og les den med `get_page_text`. Det gjelder pris, fellesgjeld, felleskostnader og borettslagets økonomi. Henvis til disse som «digital salgsoppgave», ikke PDF-sidetall.
-7. Logg aldri inn eller ut, fyll aldri ut skjemaer med personopplysninger, og endre ingenting på kontoer i nettleseren. Krever megleren registrering for å vise salgsoppgaven, si det og be Håkon laste den ned selv.
-8. Svarer ikke nettleseren (tilkoblingsfeil eller ingen respons), er appen trolig lukket eller frakoblet. Si det i én setning og gå videre til B. Ikke prøv flere ganger.
+**A. Håkons egen nettleser** (bare hvis verktøyene finnes i økten). Det finnes to varianter. Bruk den som er til stede, og Chrome først hvis begge er det:
+- **Claude i Chrome:** verktøy med prefikset `mcp__claude-in-chrome__`. Finnes bare `enable__mcp__claude-in-chrome`, kall den først. Les skillen `chrome-browser` hvis den er tilgjengelig.
+  - Last `tabs_context_mcp`, `tabs_create_mcp`, `navigate`, `get_page_text`, `read_page`, `find` og `tabs_close_mcp` i én ToolSearch (`select:`-liste).
+  - Kall `tabs_context_mcp` først. Åpne så en **ny** fane med `tabs_create_mcp`, `navigate` til Finn-lenken, og les med `get_page_text`. Bruk aldri Håkons egne faner.
+  - Lukk fanene du åpnet når du er ferdig.
+- **Nettleseren i Claude-appen:** verktøy med prefikset `mcp__remote-devices__Claude_Browser__` eller `mcp__Claude_Browser__`. Finnes bare `enable__mcp__remote-devices__Claude_Browser`, kall den først.
+  - Last alle med én ToolSearch på prefikset (`max_results: 64`).
+  - `preview_start` med Finn-lenken (gir ny fane og `tabId`), deretter `get_page_text` med den `tabId`-en.
+
+Felles regler for begge:
+1. **Godkjenning:** må Finn eller megleren godkjennes, vent på at Håkon godkjenner. Finnes `request_access`, kall den for `https://www.finn.no` med scope `site`. Avslår han, gå videre til B.
+2. **Bot-sjekk eller samtykkedialog** (informasjonskapsler): be Håkon klikke den bort selv i fanen, og prøv `get_page_text` én gang til. I appen vises nettleserpanelet med Ctrl+Shift+B (Windows) / Cmd+Shift+B (Mac).
+3. **Digital salgsoppgave:** finn lenken til meglerens fulle eller digitale salgsoppgave på siden. Mangler PDF-en økonomidelen, åpne lenken i samme fane og les den med `get_page_text`. Det gjelder pris, fellesgjeld, felleskostnader og borettslagets økonomi. Henvis til dette som «digital salgsoppgave», ikke PDF-sidetall.
+4. **Kontoer:** logg aldri inn eller ut, fyll aldri ut skjemaer med personopplysninger, og endre ingenting på kontoer. Les bare offentlige annonsesider. Krever megleren registrering, si det og be Håkon laste ned salgsoppgaven selv.
+5. **Ingen svar** (utvidelsen eller appen er ikke tilkoblet, eller verktøyet svarer ikke): si det i én setning og gå videre til B. Ikke prøv flere ganger.
 
 **B. WebFetch**, én gang, med feltlisten over som instruks og tillegget «Svar ‹BLOKKERT› hvis siden er en captcha eller bot-sjekk». Det blir som regel blokkert av Finn. Ikke bruk `curl`.
 
@@ -74,7 +80,7 @@ grep -ciE "prisantydning|fellesgjeld|totalpris|felleskost" <scratchpad>/salgsopp
   > – hele salgsoppgaven som PDF (knappen «Last ned salgsoppgave» på meglerens side, ikke bare vedleggene),
   > – et skjermbilde av Finn-annonsen (der prisantydning, fellesgjeld og felleskostnader står), eller
   > – teksten fra annonsen (marker alt, kopier, lim inn).
-  > Tips: starter du økten fra Claude-appen på PC-en, kan jeg lese Finn selv gjennom nettleseren der.
+  > Tips: har du Claude i Chrome-utvidelsen på og åpner økten i Chrome (eller starter økten fra Claude-appen på PC-en), kan jeg lese Finn selv.
   > Eller si «fortsett», så lager jeg en foreløpig analyse uten pris og økonomi.»
 - Svarer brukeren «fortsett»: kjør resten i **foreløpig modus** (se `analyseregler.md`).
 
