@@ -96,8 +96,28 @@ def main(lat, lon):
         except Exception as e:
             r["sykkelFeil"] = str(e)[:200]
         ut[a["id"]] = r
+    try:
+        ut["_bybane"] = naermeste_bybane(lat, lon)
+    except Exception as e:
+        ut["_bybane"] = {"feil": str(e)[:200]}
     ut["_beregnet"] = {"ankomst": tid}
     print(json.dumps(ut, ensure_ascii=False, indent=1))
+
+
+def naermeste_bybane(lat, lon):
+    """Nærmeste Bybane-holdeplass med gangavstand (Entur regner avstand langs gangnettet)."""
+    q = """{ nearest(latitude: %f, longitude: %f, maximumDistance: 3000, maximumResults: 1,
+             filterByModes: [tram], filterByPlaceTypes: [stopPlace]) {
+             edges { node { distance place { ... on StopPlace { name } } } } } }""" % (lat, lon)
+    req = urllib.request.Request(URL, data=json.dumps({"query": q}).encode(), headers=HODER)
+    with urllib.request.urlopen(req, timeout=60) as r:
+        d = json.load(r)
+    kanter = d["data"]["nearest"]["edges"]
+    if not kanter:
+        return {"stopp": None, "meter": None, "gangMin": None}
+    n = kanter[0]["node"]
+    m = round(n["distance"])
+    return {"stopp": n["place"]["name"], "meter": m, "gangMin": max(1, round(m / 80))}
 
 
 if __name__ == "__main__":

@@ -28,11 +28,11 @@ Hvert oppfylt ønske gir pluss i «Mine kriterier». Vekt: 1 = litt viktig, 3 = 
 | Ønske | Vekt |
 |---|---|
 | Balkong eller terrasse | 2 |
-| Kort vei til Bybanen | 2 |
+| Kort vei til Bybanen (under 700 m gange til holdeplass) | 2 |
 | BRA-i over 60 m² | 2 |
 | Heis (hvis 3. etasje eller høyere) | 1 |
 | Gode solforhold / utsikt | 1 |
-| Selveier (fremfor andel) | 1 |
+| Selveier (andel gir ikke trekk, bare ikke pluss) | 1 |
 | Lave felleskostnader (< 45 kr/m² BRA-i per mnd) | 1 |
 | Parkering eller gode sykkelforhold | 1 |
 | Innflyttingsklar (ingen større oppussing de neste 5 årene) | 2 |

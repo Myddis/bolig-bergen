@@ -87,18 +87,33 @@ Bruk bare som anslag, merket «anslag», og oppgi intervallet.
   | Over 40 min | 30 |
 
 - Juster ±10 for foretrukne eller uønskede områder i `kriterier.md`, og ±5 for sol/utsikt eller støy.
+- Står foretrukne områder som TODO i `kriterier.md`, gjøres ingen områdejustering. Skriv det i begrunnelsen.
 
 ### Mine kriterier (`kriterier`)
 - Start på 50.
 - Legg til poeng for oppfylte ønsker etter vekt, ca. +5 per vektpoeng, maks 100.
-- Trekk tilsvarende for klare motsetninger.
+- Et ønske som ikke er oppfylt gir 0, ikke trekk. Trekk bare for klare motsetninger til noe brukeren har skrevet at de ikke vil ha.
+- «Kort vei til Bybanen» er oppfylt når `bybane.meter` (gangavstand fra `reisetid.py`) er under 700.
+- Eieform: selveier gir pluss etter vekt. Andel og aksje gir verken pluss eller trekk.
 - Hvis et må-krav er brutt: maks 30.
 
 ### Totalscore
 `score = round(sum(delscore × vekt))` med vektene fra `kriterier.md`.
 Hvis et må-krav er brutt, er maks totalscore 45.
 
+## Foreløpig modus
+Brukes når pris- eller økonomitallene mangler (typisk: PDF-en er bare vedlegg og Finn-annonsen er blokkert), og brukeren har sagt «fortsett».
+
+- Sett delscorer uten grunnlag til `null`. Typisk `pris` (uten totalpris) og `okonomi` (uten fellesgjeld/felleskost.).
+- Gjett aldri tall for å kunne score.
+- **Foreløpig score** = vektet snitt av delscorene som finnes, med vektene skalert opp så de summerer til 1:
+  `score = round(sum(delscore × vekt) / sum(vekt))`, bare over delscorer som ikke er `null`.
+- Krever minst `tilstand` og én annen delscore. Ellers `score: null`.
+- Sett `forelopig: true` og `manglerTall` til feltnavnene som mangler (f.eks. `["prisantydning", "fellesgjeld", "fellesMnd", "omkostninger"]`).
+- Skriv i `oppsummering` at scoren er foreløpig og hva som mangler.
+- Når tallene kommer («Fullfør analysene»): regn ut alt på nytt, og sett `forelopig: false` og `manglerTall: []`.
+
 ## Tone
 - Skriv som en erfaren og nøktern rådgiver: konkret, ingen salgsspråk.
-- Vis til sidetall der du kan, f.eks. «(s. 23)».
+- Vis til sidetall der du kan, f.eks. «(PDF s. 23)». Sidetallet er PDF-sidetallet, ikke rapportens egen nummerering.
 - Skill tydelig mellom fakta fra salgsoppgaven og dine vurderinger og anslag.

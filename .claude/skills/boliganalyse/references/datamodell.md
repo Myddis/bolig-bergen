@@ -1,7 +1,7 @@
 # Datamodell: `leiligheter/<finnkode>`
 
 Ett dokument per bolig i artifactens database (samling `leiligheter`, doc_id = Finn-koden).
-Kopi i repoet: `data/leiligheter/<finnkode>.json`.
+Sikkerhetskopi i repoet (`data/leiligheter/<finnkode>.json`) tas bare når brukeren ber om det.
 
 - Alle beløp er i kroner (heltall), alle areal i m² og alle tider i minutter.
 - Ukjent verdi er `null`. Ikke utelat felt som er listet som påkrevd.
@@ -18,7 +18,9 @@ Kopi i repoet: `data/leiligheter/<finnkode>.json`.
   "bydel": "Årstad",                             // fra geokod.py
   "lat": 60.3605, "lon": 5.3523,                 // påkrevd for prikk på kartet
   "boligtype": "Leilighet",
-  "kilde": "salgsoppgave + annonse",             // eller "salgsoppgave", "kun annonse"
+  "kilde": "salgsoppgave + annonse",             // f.eks. "salgsoppgave", "vedlegg + skjermbilde av annonse"
+  "forelopig": false,                            // true når pris/økonomi mangler (se analyseregler.md)
+  "manglerTall": [],                             // feltnavn som mangler, f.eks. ["prisantydning", "fellesgjeld"]
   "lagtTil": "2026-11-11T18:00:00Z",             // bare ved første lagring
   "analysertDato": "2026-11-11T18:00:00Z",
 
@@ -75,14 +77,17 @@ Kopi i repoet: `data/leiligheter/<finnkode>.json`.
     "meg":     { "kollektivMin": 12, "bytter": 0, "rute": "Buss 610", "gangMin": 25, "gangKm": 1.8, "sykkelMin": 14 }
   },
 
+  // Nærmeste Bybane-holdeplass (scripts/reisetid.py → _bybane)
+  "bybane": { "stopp": "Wergeland", "meter": 290, "gangMin": 4 },
+
   // Vurdering
-  "score": 72,
+  "score": 72,                                   // foreløpig score hvis forelopig: true
   "delscorer": { "pris": 70, "tilstand": 66, "okonomi": 75, "beliggenhet": 80, "kriterier": 70 },
   "delscoreBegrunnelse": { "pris": "…", "tilstand": "…", "okonomi": "…", "beliggenhet": "…", "kriterier": "…" },
   "oppsummering": "2–4 setninger med anbefaling.",
   "styrker": ["…"],
   "svakheter": ["…"],
-  "rodeFlagg": ["TG3 på bad: lekkasje ved sluk (s. 31)"],
+  "rodeFlagg": ["TG3 på bad: lekkasje ved sluk (PDF s. 31)"],
   "sporsmal": ["Når ble badet sist pusset opp, og finnes det dokumentasjon?"],
   "visninger": [{ "dato": "2026-11-16", "tid": "12:00–13:00" }],
   "mangler": ["Energimerke ikke oppgitt"],

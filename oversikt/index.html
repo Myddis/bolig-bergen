@@ -134,6 +134,7 @@ details.pop[open] > summary { border-color: var(--accent); }
 .dot.fade { opacity: .35; }
 .ring { fill: none; stroke: var(--ink); stroke-width: 1.6; pointer-events: none; }
 .selring { fill: none; stroke: var(--accent); stroke-width: 3; pointer-events: none; }
+.prering { fill: none; stroke: var(--ink); stroke-width: 1.4; stroke-dasharray: 3 2.5; pointer-events: none; opacity: .75; }
 .work rect { fill: var(--ink); stroke: var(--surface); stroke-width: 2; }
 .work text { fill: var(--surface); font-weight: 700; font-size: 11px; text-anchor: middle; dominant-baseline: central; pointer-events: none; }
 .work text.worklbl { font-size: 11px; font-weight: 600; fill: var(--ink); paint-order: stroke; stroke: var(--land); stroke-width: 3px; pointer-events: none; }
@@ -187,6 +188,9 @@ aside.side { border-left: 1px solid var(--line); background: var(--surface); min
 .pill.soft { background: var(--surface-2); border: 1px solid var(--line); font-weight: 500; }
 .pill.status { background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--accent); }
 .pill.warn { background: color-mix(in srgb, var(--bad) 14%, transparent); color: var(--bad); }
+.pill.pre { border: 1px dashed var(--muted); color: var(--muted); font-weight: 600; }
+.preblk { background: var(--surface-2); }
+.preblk p { margin: 0; }
 .fav { color: var(--mid); }
 
 .empty { padding: 28px 20px; display: grid; gap: 10px; color: var(--muted); }
@@ -513,6 +517,7 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
       const m = en.append("g").attr("class", "m");
       m.append("circle").attr("class", "selring").attr("r", 13);
       m.append("circle").attr("class", "ring").attr("r", 10.5);
+      m.append("circle").attr("class", "prering").attr("r", 16);
       m.append("circle").attr("class", "dot").attr("r", 7.5)
         .on("mouseenter", (ev, d) => { S.hover = d.id; showTip(ev, d); highlightCard(d.id, true); })
         .on("mousemove", (ev, d) => showTip(ev, d))
@@ -523,6 +528,7 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
     g.order();
     g.select(".dot").attr("fill", colorFor).classed("fade", faded).attr("r", (d) => d.id === S.sel ? 9 : 7.5);
     g.select(".ring").attr("display", (d) => d.favoritt ? null : "none");
+    g.select(".prering").attr("display", (d) => d.forelopig ? null : "none");
     g.select(".selring").attr("display", (d) => d.id === S.sel ? null : "none");
     placeOverlay();
   }
@@ -557,7 +563,7 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
       ...S.arbeid.map((a) => [a.navn, fmtMin(reise(b, a.id))]),
     ];
     tip.innerHTML = `<h4>${esc(b.adresse || b.tittel || "Ukjent adresse")}</h4>
-      <div class="meta">${esc(b.bydel || "")}${b.eieform ? " · " + esc(b.eieform) : ""}${b.score != null ? ` · <span class="pill score" style="background:${scoreColor(b.score)}">${b.score}</span>` : ""}</div>
+      <div class="meta">${esc(b.bydel || "")}${b.eieform ? " · " + esc(b.eieform) : ""}${b.score != null ? ` · <span class="pill score" style="background:${scoreColor(b.score)}">${b.forelopig ? "~" : ""}${b.score}</span>` : ""}${b.forelopig ? ` · <span class="pill pre">Foreløpig</span>` : ""}</div>
       <dl>${rows.map(([k, v]) => `<dt>${esc(k)}</dt><dd class="num">${esc(v)}</dd>`).join("")}</dl>`;
     tip.hidden = false;
     let x = ev.clientX - box.left + 14, y = ev.clientY - box.top + 14;
@@ -588,6 +594,7 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
         .map(([c, t]) => `<div class="row"><span class="sw" style="background:var(${c})"></span>${t}</div>`).join("");
       L.innerHTML = `<div class="t">Reisetid ${esc(a ? a.navn : "")}</div>${rows}<div class="src">Raskeste av kollektiv og gange</div>`;
     }
+    if ([...S.boliger.values()].some((b) => b.forelopig)) L.innerHTML += `<div class="row"><span class="sw" style="border:1.4px dashed var(--ink);background:none"></span>Foreløpig analyse</div>`;
     L.innerHTML += S.arbeid.length ? `<div class="row work-row" style="margin-top:4px"><span class="sw" style="background:var(--ink);border-radius:2px;transform:rotate(45deg)"></span>Arbeidssted</div>` : "";
   }
 
@@ -603,8 +610,8 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
     }).join("");
     return `<button type="button" class="card${faded(b) ? " fade" : ""}${S.hover === b.id ? " hl" : ""}" data-id="${esc(b.id)}">
       <span class="adr">${b.favoritt ? '<span class="fav" aria-label="Favoritt">★</span> ' : ""}${esc(b.adresse || b.tittel || "Ukjent adresse")}</span>
-      <span>${b.score != null ? `<span class="pill score" style="background:${scoreColor(b.score)}">${b.score}</span>` : `<span class="pill soft">Ikke analysert</span>`}</span>
-      <span class="sub">${esc(b.bydel || "Ukjent bydel")}${b.eieform ? " · " + esc(b.eieform) : ""}${st !== "ny" ? ` · <span class="pill status">${esc(STATUSER[st] || st)}</span>` : ""}${tg3 ? ` · <span class="pill warn">${tg3}× TG3</span>` : ""}</span>
+      <span>${b.score != null ? `<span class="pill score" style="background:${scoreColor(b.score)}">${b.forelopig ? "~" : ""}${b.score}</span>` : `<span class="pill soft">${b.forelopig ? "Foreløpig" : "Ikke analysert"}</span>`}</span>
+      <span class="sub">${esc(b.bydel || "Ukjent bydel")}${b.eieform ? " · " + esc(b.eieform) : ""}${st !== "ny" ? ` · <span class="pill status">${esc(STATUSER[st] || st)}</span>` : ""}${tg3 ? ` · <span class="pill warn">${tg3}× TG3</span>` : ""}${b.forelopig ? ` · <span class="pill pre">Foreløpig</span>` : ""}</span>
       <span class="facts"><span class="num">${mill(totalpris(b))}</span><span class="num">${m2(b.braI)}</span><span>${b.soverom ?? "–"} sov.</span><span class="num">${krm2(b) ? nf.format(krm2(b)) + " kr/m²" : ""}</span></span>
       ${comm ? `<span class="commute">${comm}</span>` : ""}
     </button>`;
@@ -700,6 +707,7 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
       ["Etasje", b.etasje ?? "–"], ["Byggeår", b.byggeaar ?? "–"],
       ["Eieform", b.eieform || "–"], ["Energimerke", b.energimerke || "–"],
       ["Omkostninger", kr(b.omkostninger)], ["Kommunale avg./år", kr(b.kommunaleAvgAar)],
+      ["Nærmeste Bybane", b.bybane && b.bybane.stopp ? `${b.bybane.stopp}, ${nf.format(b.bybane.meter)} m` : "–"],
     ];
     const extras = [b.heis ? "Heis" : null, b.balkong ? "Balkong/terrasse" : null, b.parkering ? "Parkering: " + b.parkering : null].filter(Boolean);
     const commRows = S.arbeid.map((a) => {
@@ -729,7 +737,10 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
           <label class="chk" for="dstatus">Status <select id="dstatus" data-status>${statusOpts}</select></label>
         </div>
       </div>
-      <section class="blk"><h3>Vurdering</h3>
+      ${b.forelopig ? `<section class="blk preblk"><h3>Foreløpig analyse</h3>
+        <p>Scoren bygger bare på delene som kunne vurderes. ${(b.manglerTall || []).length ? `Mangler: ${esc(b.manglerTall.join(", "))}.` : ""}</p>
+        <p style="color:var(--muted)">Send et skjermbilde av Finn-annonsen eller hele salgsoppgaven til Claude, og be om «fullfør analysene».</p></section>` : ""}
+      <section class="blk"><h3>Vurdering${b.forelopig ? " (foreløpig)" : ""}</h3>
         <div class="scorebox">
           <div class="bigscore" style="background:${scoreColor(b.score)}">${b.score ?? "–"}</div>
           <div class="bars">${DELSCORER.map(([k, t]) => { const v = (b.delscorer || {})[k]; return `<div class="bar"><span>${t}</span><span class="track"><span class="fill" style="display:block;width:${v ?? 0}%;background:${scoreColor(v)}"></span></span><span class="num">${v ?? "–"}</span></div>`; }).join("")}</div>
