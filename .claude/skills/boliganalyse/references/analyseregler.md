@@ -54,7 +54,7 @@ Bruk bare som anslag, merket «anslag», og oppgi intervallet.
   3. din egen vurdering, som da skrives som usikker i `delscoreBegrunnelse`.
 - Utgangspunkt 70 når prisen er lik referansen. Juster ±10 for hver 5 % under/over, og hold resultatet mellom 10 og 100.
 - Trekk 5–15 hvis kjent oppussingsbehov ikke ser ut til å være priset inn.
-- Trekk 20 hvis totalprisen er over `maksTotalpris`.
+- Trekk 20 hvis totalprisen er over `maksTotalpris`, og skriv hvilket bud som trengs (`budForBudsjett`).
 
 ### Tilstand (`tilstand`)
 - Start på 100.
@@ -86,19 +86,44 @@ Bruk bare som anslag, merket «anslag», og oppgi intervallet.
   | ≤ 40 min | 50 |
   | Over 40 min | 30 |
 
-- Juster ±10 for foretrukne eller uønskede områder i `kriterier.md`, og ±5 for sol/utsikt eller støy.
-- Står foretrukne områder som TODO i `kriterier.md`, gjøres ingen områdejustering. Skriv det i begrunnelsen.
+- Ingen justering for område (se `kriterier.md`).
+- Solforhold og utsikt: +10 for svært gode (sørvest/vestvendt uteplass, høy etasje med åpent lysinnslipp), −10 for dårlige (nordvendt, skyggefullt, lav etasje mot fjell eller bygg). Bruk salgsoppgavens beskrivelse og retning.
+- Støy fra trafikkert vei, Bybanen eller utesteder: −5.
 
 ### Mine kriterier (`kriterier`)
 - Start på 50.
-- Legg til poeng for oppfylte ønsker etter vekt, ca. +5 per vektpoeng, maks 100.
+- Legg til poeng for oppfylte ønsker etter vekt, +3 per vektpoeng, maks 100.
 - Et ønske som ikke er oppfylt gir 0, ikke trekk. Trekk bare for klare motsetninger til noe brukeren har skrevet at de ikke vil ha.
-- «Kort vei til Bybanen» er oppfylt når `bybane.meter` (gangavstand fra `reisetid.py`) er under 700.
+- «Kort vei til kollektiv» er oppfylt når `bybane.meter` er under 700 eller `buss.meter` er under 400 (gangavstand fra `reisetid.py`).
+- «Gode solforhold» er oppfylt når salgsoppgaven beskriver gode sol- eller lysforhold, eller uteplassen vender mot sør/vest.
 - Eieform: selveier gir pluss etter vekt. Andel og aksje gir verken pluss eller trekk.
-- Hvis et må-krav er brutt: maks 30.
+- **Må-krav** sjekkes mot `kriterier.md`:
+  - totalpris (`budForBudsjett` fra `beregn.py`)
+  - soverom (`soverom` og `soveromM2`)
+  - reisetid for begge
+  - `mndKostnad`
+  - antall større jobber (`storreJobber`)
+  - TG3
+- Hvis et må-krav er brutt: maks 30, legg bruddet i `rodeFlagg`, og nevn det først i `oppsummering`.
+
+### Investering (`investering`)
+Bygger på `investering.breakEvenAar` fra `scripts/beregn.py`: antall år før det lønner seg å kjøpe framfor å fortsette å leie.
+
+| År til break-even | Grunnlag |
+|---|---|
+| ≤ 3 | 100 |
+| ≤ 5 | 85 |
+| ≤ 7 | 70 |
+| ≤ 10 | 50 |
+| ≤ 15 | 30 |
+| Over 15 eller aldri (`null`) | 15 |
+
+- Juster ±10 for forhold som påvirker videresalg: solforhold, etasje, uteplass, planløsning og hvor ettertraktet strøket er.
+- Juster −10 for kjente kostnader som ikke er med i regnestykket: stor oppussing, varslet økning i felleskostnadene, fellesgjeld som går over fra avdragsfrihet til avdrag.
+- Skriv i begrunnelsen at regnestykket bygger på prisveksten i `kriterier.md` (nå 8 %/år, siste års vekst). Ved lavere vekst blir det lengre tid før kjøpet lønner seg. Bruk `investering.antagelser`.
 
 ### Totalscore
-`score = round(sum(delscore × vekt))` med vektene fra `kriterier.md`.
+`score = round(sum(delscore × vekt))` med de seks vektene fra `kriterier.md` (pris, tilstand, økonomi, beliggenhet, kriterier, investering).
 Hvis et må-krav er brutt, er maks totalscore 45.
 
 ## Foreløpig modus

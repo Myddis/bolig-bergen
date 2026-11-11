@@ -1,7 +1,7 @@
 """Reisetid fra en bolig til arbeidsstedene i config.json, via Entur (dekker Skyss).
 
 Bruk:  python3 scripts/reisetid.py <lat> <lon>
-Ut:    JSON {"<id>": {"navn", "adresse", "kollektivMin", "bytter", "rute", "gangKollektivMin",
+Ut:    JSON {"_bybane": {...}, "_buss": {...}, "<id>": {"navn", "adresse", "kollektivMin", "bytter", "rute", "gangKollektivMin",
                       "gangMin", "gangKm", "sykkelMin"}, ...}
 
 Kollektiv: raskeste av inntil 5 forslag med oppmøte kl. <ankomst> neste <ukedag>.
@@ -96,19 +96,20 @@ def main(lat, lon):
         except Exception as e:
             r["sykkelFeil"] = str(e)[:200]
         ut[a["id"]] = r
-    try:
-        ut["_bybane"] = naermeste_bybane(lat, lon)
-    except Exception as e:
-        ut["_bybane"] = {"feil": str(e)[:200]}
+    for nokkel, modus in (("_bybane", "tram"), ("_buss", "bus")):
+        try:
+            ut[nokkel] = naermeste_stopp(lat, lon, modus)
+        except Exception as e:
+            ut[nokkel] = {"feil": str(e)[:200]}
     ut["_beregnet"] = {"ankomst": tid}
     print(json.dumps(ut, ensure_ascii=False, indent=1))
 
 
-def naermeste_bybane(lat, lon):
-    """Nærmeste Bybane-holdeplass med gangavstand (Entur regner avstand langs gangnettet)."""
+def naermeste_stopp(lat, lon, modus="tram"):
+    """Nærmeste holdeplass for Bybanen (tram) eller buss (bus), med gangavstand langs gangnettet (Entur)."""
     q = """{ nearest(latitude: %f, longitude: %f, maximumDistance: 3000, maximumResults: 1,
-             filterByModes: [tram], filterByPlaceTypes: [stopPlace]) {
-             edges { node { distance place { ... on StopPlace { name } } } } } }""" % (lat, lon)
+             filterByModes: [%s], filterByPlaceTypes: [stopPlace]) {
+             edges { node { distance place { ... on StopPlace { name } } } } } }""" % (lat, lon, modus)
     req = urllib.request.Request(URL, data=json.dumps({"query": q}).encode(), headers=HODER)
     with urllib.request.urlopen(req, timeout=60) as r:
         d = json.load(r)

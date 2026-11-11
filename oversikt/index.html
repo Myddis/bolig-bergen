@@ -340,7 +340,7 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
   "use strict";
   const BYDELER = ["Arna", "Bergenhus", "Fana", "Fyllingsdalen", "Laksevåg", "Ytrebygda", "Årstad", "Åsane"];
   const STATUSER = { ny: "Ny", interessert: "Interessert", visning: "Visning", bud: "Bud", avvist: "Avvist", solgt: "Solgt" };
-  const DELSCORER = [["pris", "Pris"], ["tilstand", "Tilstand"], ["okonomi", "Økonomi i laget"], ["beliggenhet", "Beliggenhet"], ["kriterier", "Mine kriterier"]];
+  const DELSCORER = [["pris", "Pris"], ["tilstand", "Tilstand"], ["okonomi", "Økonomi i laget"], ["beliggenhet", "Beliggenhet"], ["kriterier", "Mine kriterier"], ["investering", "Investering"]];
   const $ = (id) => document.getElementById(id);
   const nf = new Intl.NumberFormat("nb-NO");
   const kr = (v) => v == null || isNaN(v) ? "–" : nf.format(Math.round(v)) + " kr";
@@ -561,10 +561,11 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
       ["Soverom", b.soverom ?? "–"],
       ["Kr/m²", krm2(b) ? nf.format(krm2(b)) : "–"],
       ...S.arbeid.map((a) => [a.navn, fmtMin(reise(b, a.id))]),
+      ...(b.investering && b.investering.breakEvenAar ? [["Lønner seg etter", b.investering.breakEvenAar + " år"]] : []),
     ];
     tip.innerHTML = `<h4>${esc(b.adresse || b.tittel || "Ukjent adresse")}</h4>
       <div class="meta">${esc(b.bydel || "")}${b.eieform ? " · " + esc(b.eieform) : ""}${b.score != null ? ` · <span class="pill score" style="background:${scoreColor(b.score)}">${b.forelopig ? "~" : ""}${b.score}</span>` : ""}${b.forelopig ? ` · <span class="pill pre">Foreløpig</span>` : ""}</div>
-      <dl>${rows.map(([k, v]) => `<dt>${esc(k)}</dt><dd class="num">${esc(v)}</dd>`).join("")}</dl>`;
+      <dl>${rows.map(([k, v]) => `<dt>${esc(k)}</dt><dd class="num">${esc(v)}</dd>`).join("")}</dl>${b.budForBudsjett ? `<div class="meta" style="color:var(--bad);margin:8px 0 0">Over budsjett: krever bud ≤ ${esc(mill(b.budForBudsjett))}</div>` : ""}`;
     tip.hidden = false;
     let x = ev.clientX - box.left + 14, y = ev.clientY - box.top + 14;
     if (x + 260 > box.width) x = ev.clientX - box.left - 264;
@@ -611,7 +612,7 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
     return `<button type="button" class="card${faded(b) ? " fade" : ""}${S.hover === b.id ? " hl" : ""}" data-id="${esc(b.id)}">
       <span class="adr">${b.favoritt ? '<span class="fav" aria-label="Favoritt">★</span> ' : ""}${esc(b.adresse || b.tittel || "Ukjent adresse")}</span>
       <span>${b.score != null ? `<span class="pill score" style="background:${scoreColor(b.score)}">${b.forelopig ? "~" : ""}${b.score}</span>` : `<span class="pill soft">${b.forelopig ? "Foreløpig" : "Ikke analysert"}</span>`}</span>
-      <span class="sub">${esc(b.bydel || "Ukjent bydel")}${b.eieform ? " · " + esc(b.eieform) : ""}${st !== "ny" ? ` · <span class="pill status">${esc(STATUSER[st] || st)}</span>` : ""}${tg3 ? ` · <span class="pill warn">${tg3}× TG3</span>` : ""}${b.forelopig ? ` · <span class="pill pre">Foreløpig</span>` : ""}</span>
+      <span class="sub">${esc(b.bydel || "Ukjent bydel")}${b.eieform ? " · " + esc(b.eieform) : ""}${st !== "ny" ? ` · <span class="pill status">${esc(STATUSER[st] || st)}</span>` : ""}${tg3 ? ` · <span class="pill warn">${tg3}× TG3</span>` : ""}${b.forelopig ? ` · <span class="pill pre">Foreløpig</span>` : ""}${b.budForBudsjett ? ` · <span class="pill warn">Over budsjett</span>` : ""}</span>
       <span class="facts"><span class="num">${mill(totalpris(b))}</span><span class="num">${m2(b.braI)}</span><span>${b.soverom ?? "–"} sov.</span><span class="num">${krm2(b) ? nf.format(krm2(b)) + " kr/m²" : ""}</span></span>
       ${comm ? `<span class="commute">${comm}</span>` : ""}
     </button>`;
@@ -708,6 +709,8 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
       ["Eieform", b.eieform || "–"], ["Energimerke", b.energimerke || "–"],
       ["Omkostninger", kr(b.omkostninger)], ["Kommunale avg./år", kr(b.kommunaleAvgAar)],
       ["Nærmeste Bybane", b.bybane && b.bybane.stopp ? `${b.bybane.stopp}, ${nf.format(b.bybane.meter)} m` : "–"],
+      ["Nærmeste buss", b.buss && b.buss.stopp ? `${b.buss.stopp}, ${nf.format(b.buss.meter)} m` : "–"],
+      ["Mnd. etter rentefradrag", kr(b.mndKostnadEtterFradrag)],
     ];
     const extras = [b.heis ? "Heis" : null, b.balkong ? "Balkong/terrasse" : null, b.parkering ? "Parkering: " + b.parkering : null].filter(Boolean);
     const commRows = S.arbeid.map((a) => {
@@ -752,6 +755,16 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
         <div class="kv">${kv.map(([k, v]) => `<div><span>${esc(k)}</span><b class="num">${esc(v)}</b></div>`).join("")}</div>
         ${extras.length ? `<div class="meta" style="color:var(--muted)">${esc(extras.join(" · "))}</div>` : ""}
       </section>
+      ${b.budForBudsjett ? `<section class="blk"><h3>Budsjett</h3><p class="prose">Totalprisen er over finansieringsbeviset. For å holde deg innenfor må budet være høyst <b class="num">${esc(kr(b.budForBudsjett))}</b>${b.prisantydning ? ` (prisantydning ${esc(kr(b.prisantydning))})` : ""}.</p></section>` : ""}
+      ${b.investering ? `<section class="blk"><h3>Investering</h3>
+        <div class="kv">
+          <div><span>Kjøp lønner seg etter</span><b class="num">${b.investering.breakEvenAar ? esc(b.investering.breakEvenAar + " år") : "Over 30 år"}</b></div>
+          <div><span>Verdi om 5 år</span><b class="num">${esc(mill(b.investering.verdi5))}</b></div>
+          <div><span>Formue om 5 år, kjøp</span><b class="num">${esc(kr(b.investering.formueKjop5))}</b></div>
+          <div><span>Formue om 5 år, leie</span><b class="num">${esc(kr(b.investering.formueLeie5))}</b></div>
+        </div>
+        <div class="meta" style="color:var(--muted);font-size:12px">Sammenlignet med å fortsette å leie. Formue ved kjøp er etter restlån, fellesgjeld og salgskostnad. ${esc(b.investering.antagelser || "")}</div>
+      </section>` : ""}
       ${S.arbeid.length ? `<section class="blk"><h3>Reisetid til jobb</h3>
         <div style="overflow-x:auto"><table class="commtab"><thead><tr><th></th><th class="r">Kollektiv</th><th class="r">Gange</th><th class="r">Sykkel</th></tr></thead><tbody>${commRows}</tbody></table></div>
         <div class="meta" style="color:var(--muted);font-size:12px">Oppmøte kl. 08:00 en tirsdag, dør til dør. Kilde: Entur (Skyss-ruter).</div></section>` : ""}

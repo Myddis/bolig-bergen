@@ -111,16 +111,17 @@ python3 scripts/reisetid.py <lat> <lon>
 ```
 
 - Lagre hvert arbeidssted under `pendling.<id>` (`kollektivMin`, `bytter`, `rute`, `gangMin`, `gangKm`, `sykkelMin`).
-- Lagre `_bybane` som `bybane` (`stopp`, `meter`, `gangMin`). `meter` er gangavstand.
+- Lagre `_bybane` som `bybane` og `_buss` som `buss` (`stopp`, `meter`, `gangMin`). `meter` er gangavstand.
 - Hopp over `_beregnet`. Feiler Entur, sett feltene til `null` og nevn det.
 
 ### 7. Analyse og score
 1. Bygg dokumentet etter `references/datamodell.md`, og skriv det til `<scratchpad>/<finnkode>.json`.
-2. Kjør `python3 scripts/beregn.py <scratchpad>/<finnkode>.json`. Skriptet fyller inn `totalpris`, `krPerM2`, `mndKostnad` og `felleskostPerM2`, og sier fra om manglende felt.
+2. Kjør `python3 scripts/beregn.py <scratchpad>/<finnkode>.json`. Skriptet fyller inn `totalpris`, `krPerM2`, `felleskostPerM2`, `mndKostnad`, `mndKostnadEtterFradrag`, `budForBudsjett` og `investering`. Det sier også fra om manglende felt og brutte må-krav for pris og månedskostnad.
 3. Hent de andre boligene for sammenligning med `ArtifactData list` (samling `leiligheter`, `out_dir` i scratchpad). Bruk median kr/m² i samme bydel når det finnes minst tre andre.
-4. Sett delscorer og total score etter `analyseregler.md` og vektene i `kriterier.md`. Skriv en kort begrunnelse for hver delscore i `delscoreBegrunnelse`.
-5. Mangler pris- eller økonomitall: følg «Foreløpig modus» i `analyseregler.md` (`forelopig: true`, `manglerTall`).
-6. Skriv innholdet:
+4. Fyll inn `soveromM2` (størrelse på hvert soverom) og `storreJobber` (større jobber de neste 5 årene). Sjekk alle må-krav i `kriterier.md`.
+5. Sett de seks delscorene (pris, tilstand, okonomi, beliggenhet, kriterier, investering) og total score etter `analyseregler.md` og vektene i `kriterier.md`. Skriv en kort begrunnelse for hver delscore i `delscoreBegrunnelse`.
+6. Mangler pris- eller økonomitall: følg «Foreløpig modus» i `analyseregler.md` (`forelopig: true`, `manglerTall`).
+7. Skriv innholdet:
    - `oppsummering`: 2–4 setninger, med en klar anbefaling (verdt en visning eller ikke, og hvorfor).
    - `styrker` og `svakheter`: 3–6 punkter hver.
    - `rodeFlagg`: bare reelle forhold, med kilde («PDF s. 14»).
@@ -138,6 +139,7 @@ python3 scripts/reisetid.py <lat> <lon>
 ### 9. Svar til brukeren
 Kort i chatten, høyst ca. 15 linjer:
 - Adresse, bydel, totalpris, BRA-i og score (med delscorer på én linje). Skriv «foreløpig» hvis det gjelder.
+- Budsjett: innenfor 4,9 mill eller ikke (og hvilket bud som trengs), månedskostnad før og etter rentefradrag, og år før kjøpet lønner seg mot å leie.
 - Reisetid for begge (kollektiv / gange) og nærmeste Bybane-holdeplass.
 - De tre viktigste styrkene og svakhetene.
 - Røde flagg.
@@ -150,10 +152,11 @@ Kort i chatten, høyst ca. 15 linjer:
   2. Les de nye tallene (skjermbilde, tekst, WebFetch eller ny PDF).
   3. Fyll inn feltene, kjør `beregn.py`, sett pris- og økonomiscore og total score på nytt, og sett `forelopig: false` og `manglerTall: []`.
   4. Lagre med `update` og `if_version`.
-- **«Oppdater reisetid for alle»:** list alle boligene, kjør `reisetid.py` for hver, og oppdater bare `pendling` og `bybane` (med `if_version`). Gjør det samme etter endringer i `config.json`.
+- **«Oppdater reisetid for alle»:** list alle boligene, kjør `reisetid.py` for hver, og oppdater bare `pendling`, `bybane` og `buss` (med `if_version`). Gjør det samme etter endringer i `config.json`.
 - **«Sammenlign X og Y»:** les begge dokumentene og svar med en tabell og en anbefaling.
 - **«Fjern / marker som solgt»:** oppdater `status`, eller slett bare hvis brukeren ber om det eksplisitt.
 - **«Ta sikkerhetskopi»:** list alle dokumentene med `ArtifactData list` og `out_dir: data/`. Commit `data/leiligheter/` og push.
+- **Endrede kriterier** (f.eks. ny rente, egenkapital eller prisvekst): for hver bolig, kjør `beregn.py` på dokumentet, sett kriterier- og investeringsscore og total score på nytt, og oppdater med `if_version`.
 - **Nye arbeidssteder:**
   1. Oppdater `config.json`.
   2. Oppdater dokumentet `oppsett/arbeidssteder` i databasen (feltet `liste`, samme format).

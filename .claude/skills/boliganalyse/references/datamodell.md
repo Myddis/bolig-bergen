@@ -35,12 +35,15 @@ Sikkerhetskopi i repoet (`data/leiligheter/<finnkode>.json`) tas bare når bruke
   "eiendomsskattAar": null,
   "krPerM2": 75000,                              // beregn.py (totalpris / BRA-i)
   "felleskostPerM2": 67,                         // beregn.py
-  "mndKostnad": 24500,                           // beregn.py (lån + felles + avgifter)
+  "mndKostnad": 24500,                           // beregn.py (lån + felles + avgifter), før rentefradrag
+  "mndKostnadEtterFradrag": 22300,               // beregn.py, første år
+  "budForBudsjett": null,                        // beregn.py: maks bud for å holde totalpris ≤ maksTotalpris, null hvis innenfor
   "mndKostnadForklaring": "Lån 3,55 mill, 5,2 %, 30 år: 19 500 + felles 3 900 + …",
 
   // Boligen
   "braI": 58, "bra": 63, "braE": 5, "pRom": null,
   "soverom": 2, "rom": 3, "etasje": "3",
+  "soveromM2": [12.4, 10.8],                     // størrelse på hvert soverom
   "byggeaar": 1962, "eieform": "Andel",          // "Selveier" | "Andel" | "Aksje"
   "energimerke": "D", "heis": false, "balkong": true,
   "parkering": "Gateparkering",                  // fritekst eller null
@@ -51,6 +54,7 @@ Sikkerhetskopi i repoet (`data/leiligheter/<finnkode>.json`) tas bare når bruke
   "tg2": [{ "rom": "Kjøkken", "tekst": "Mangler komfyrvakt", "estimat": 3000, "side": 33 }],
   "tgiu": ["Krypkjeller"],
   "oppussingEstimat": 280000,                    // midtpunkt, kr
+  "storreJobber": ["Bad"],                       // større jobber de neste 5 årene (bad, kjøkken, el, tak, drenering, vinduer, rør)
 
   // Borettslag / sameie
   "borettslag": {
@@ -79,11 +83,18 @@ Sikkerhetskopi i repoet (`data/leiligheter/<finnkode>.json`) tas bare når bruke
 
   // Nærmeste Bybane-holdeplass (scripts/reisetid.py → _bybane)
   "bybane": { "stopp": "Wergeland", "meter": 290, "gangMin": 4 },
+  "buss": { "stopp": "Wergelandsveien", "meter": 120, "gangMin": 2 },   // reisetid.py → _buss
+
+  // Investering (beregn.py): kjøp mot å fortsette å leie
+  "investering": {
+    "breakEvenAar": 2, "verdi5": 6390000, "formueKjop5": 2300000, "formueLeie5": 1100000, "gevinst5": 1200000,
+    "antagelser": "Prisvekst 8.0 %/år, rente 5.5 %, …"
+  },
 
   // Vurdering
   "score": 72,                                   // foreløpig score hvis forelopig: true
-  "delscorer": { "pris": 70, "tilstand": 66, "okonomi": 75, "beliggenhet": 80, "kriterier": 70 },
-  "delscoreBegrunnelse": { "pris": "…", "tilstand": "…", "okonomi": "…", "beliggenhet": "…", "kriterier": "…" },
+  "delscorer": { "pris": 70, "tilstand": 66, "okonomi": 75, "beliggenhet": 80, "kriterier": 70, "investering": 85 },
+  "delscoreBegrunnelse": { "pris": "…", "tilstand": "…", "okonomi": "…", "beliggenhet": "…", "kriterier": "…", "investering": "…" },
   "oppsummering": "2–4 setninger med anbefaling.",
   "styrker": ["…"],
   "svakheter": ["…"],
