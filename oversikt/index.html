@@ -842,7 +842,7 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
       </section>` : ""}
       ${maal().length ? `<section class="blk"><h3>Reisetid</h3>
         <div style="overflow-x:auto"><table class="commtab"><thead><tr><th></th><th class="r">Kollektiv</th><th class="r">Gange</th><th class="r">Sykkel</th></tr></thead><tbody>${commRows}</tbody></table></div>
-        <div class="meta" style="color:var(--muted);font-size:12px">Oppmøte kl. 08:00 en tirsdag, dør til dør. ${S.steder.length ? esc(S.steder.map((x) => x.navn + " = " + (x.adresse || "")).join(", ")) + ". " : ""}Kilde: Entur (Skyss-ruter).</div></section>` : ""}
+        <div class="meta" style="color:var(--muted);font-size:12px">Oppmøte kl. 08:00 en tirsdag, dør til dør. ${S.steder.length ? esc(S.steder.map((x) => x.navn + " = " + (x.adresse || "")).join(", ")) + ". " : ""}Kilde: ${esc([...new Set(maal().map((a) => ((b.pendling || {})[a.id] || {}).kilde || "Entur"))].join(" og "))}. Sykkel: Entur.</div></section>` : ""}
       <section class="blk"><div class="cols2">
         <div><h3>Styrker</h3>${list(b.styrker)}</div>
         <div><h3>Svakheter</h3>${list(b.svakheter)}</div></div></section>

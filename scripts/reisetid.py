@@ -1,4 +1,9 @@
-"""Reisetid fra en bolig til arbeidsstedene og stedene (sentrum) i config.json, via Entur (dekker Skyss).
+"""Reisetid fra en bolig til arbeidsstedene og stedene (sentrum) i config.json.
+
+Kollektiv og gange hentes fra Google Maps (Routes API), som stemmer med det Håkon og Camilla ser i Google Maps.
+Entur (dekker Skyss) er reserve hvis Google ikke svarer, og brukes alltid for sykkel og nærmeste holdeplass.
+Hver reisetid får feltet "kilde" ("Google Maps" eller "Entur"). REISETID_KILDE=entur tvinger Entur.
+API-nøkkelen til Google legges inn av proxyen (nettverkshemmelighet for routes.googleapis.com), ikke her.
 
 Bruk:  python3 scripts/reisetid.py <lat> <lon>
 Ut:    JSON {"_bybane": {...}, "_buss": {...}, "<id>": {"navn", "adresse", "kollektivMin", "bytter", "rute", "gangKollektivMin",
@@ -6,11 +11,12 @@ Ut:    JSON {"_bybane": {...}, "_buss": {...}, "<id>": {"navn", "adresse", "koll
 
 Kollektiv: raskeste av inntil 5 forslag med oppmøte kl. <ankomst> neste <ukedag>.
 Tiden er dør-til-dør (inkl. gange til/fra holdeplass), men uten venting før avreise.
-Kun standardbiblioteket. Krever nettilgang til api.entur.io.
+Kun standardbiblioteket. Krever nettilgang til routes.googleapis.com og api.entur.io.
 """
 
 import datetime as dt
 import json
+import os
 import sys
 import urllib.request
 from pathlib import Path
@@ -55,6 +61,59 @@ def tur(fra, til, tid, modes=None, n=5):
     return d["data"]["trip"]["tripPatterns"]
 
 
+GOOGLE_URL = "https://routes.googleapis.com/directions/v2:computeRoutes"
+GOOGLE_FELT = ",".join([
+    "routes.duration", "routes.distanceMeters", "routes.legs.steps.travelMode", "routes.legs.steps.staticDuration",
+    "routes.legs.steps.distanceMeters", "routes.legs.steps.transitDetails.transitLine.nameShort",
+    "routes.legs.steps.transitDetails.transitLine.vehicle.type",
+])
+GOOGLE_MODUS = {"BUS": "Buss", "INTERCITY_BUS": "Buss", "TROLLEYBUS": "Buss", "TRAM": "Bybanen", "LIGHT_RAIL": "Bybanen",
+                "RAIL": "Tog", "HEAVY_RAIL": "Tog", "COMMUTER_TRAIN": "Tog", "FERRY": "Båt", "SUBWAY": "T-bane"}
+
+
+def google(fra, til, modus, ankomst=None):
+    body = {"origin": {"location": {"latLng": {"latitude": fra[0], "longitude": fra[1]}}},
+            "destination": {"location": {"latLng": {"latitude": til[0], "longitude": til[1]}}},
+            "travelMode": modus, "languageCode": "no"}
+    if modus == "TRANSIT":
+        body.update(arrivalTime=ankomst, computeAlternativeRoutes=True)
+    req = urllib.request.Request(GOOGLE_URL, data=json.dumps(body).encode(),
+                                 headers={"Content-Type": "application/json", "X-Goog-FieldMask": GOOGLE_FELT})
+    with urllib.request.urlopen(req, timeout=60) as r:
+        d = json.load(r)
+    ruter = d.get("routes") or []
+    if not ruter:
+        raise RuntimeError(f"Google fant ingen rute ({modus})")
+    return ruter
+
+
+def sek(v):
+    return int(str(v or "0s").rstrip("s") or 0)
+
+
+def google_reise(fra, til, ankomst):
+    """Kollektiv (raskeste av Googles forslag med oppmøte til ankomst) og gange."""
+    r = {}
+    ruter = google(fra, til, "TRANSIT", ankomst)
+    steg = lambda rute: [s for leg in rute.get("legs", []) for s in leg.get("steps", [])]
+    med_kollektiv = [x for x in ruter if any(s.get("travelMode") == "TRANSIT" for s in steg(x))] or ruter
+    best = min(med_kollektiv, key=lambda x: sek(x.get("duration")))
+    linjer = []
+    for s in steg(best):
+        if s.get("travelMode") == "TRANSIT":
+            ln = (s.get("transitDetails") or {}).get("transitLine") or {}
+            navn = GOOGLE_MODUS.get((ln.get("vehicle") or {}).get("type"), "Kollektiv")
+            linjer.append(f"{navn} {ln.get('nameShort') or ''}".strip())
+    r["kollektivMin"] = round(sek(best.get("duration")) / 60)
+    r["bytter"] = max(0, len(linjer) - 1)
+    r["rute"] = " → ".join(linjer) or "Gange"
+    r["gangKollektivMin"] = round(sum(sek(s.get("staticDuration")) for s in steg(best) if s.get("travelMode") == "WALK") / 60)
+    g = google(fra, til, "WALK")[0]
+    r["gangMin"] = round(sek(g.get("duration")) / 60)
+    r["gangKm"] = round((g.get("distanceMeters") or 0) / 1000, 1)
+    return r
+
+
 def beskriv(p):
     deler = []
     for leg in p["legs"]:
@@ -66,6 +125,28 @@ def beskriv(p):
     return " → ".join(deler) or "Gange"
 
 
+def entur_reise(fra, til, tid):
+    """Reserve: kollektiv og gange fra Entur."""
+    r = {}
+    try:
+        kol = tur(fra, til, tid)
+        kol = [p for p in kol if any(l["mode"] != "foot" for l in p["legs"])] or kol
+        best = min(kol, key=lambda p: p["duration"])
+        r["kollektivMin"] = round(best["duration"] / 60)
+        r["bytter"] = max(0, sum(1 for l in best["legs"] if l["mode"] != "foot") - 1)
+        r["rute"] = beskriv(best)
+        r["gangKollektivMin"] = round(sum(l["duration"] for l in best["legs"] if l["mode"] == "foot") / 60)
+    except Exception as e:
+        r["kollektivFeil"] = str(e)[:200]
+    try:
+        g = tur(fra, til, tid, {"directMode": "foot", "transportModes": []}, 1)[0]
+        r["gangMin"] = round(g["duration"] / 60)
+        r["gangKm"] = round(g["distance"] / 1000, 1)
+    except Exception as e:
+        r["gangFeil"] = str(e)[:200]
+    return r
+
+
 def main(lat, lon):
     cfg = json.loads((ROT / "config.json").read_text())
     tid = neste_dag(cfg["reisetid"]["ukedag"], cfg["reisetid"]["ankomst"])
@@ -74,22 +155,13 @@ def main(lat, lon):
     for a in cfg["arbeidssteder"] + cfg.get("steder", []):
         til = (a["lat"], a["lon"])
         r = {"navn": a["navn"], "adresse": a["adresse"]}
-        try:
-            kol = tur(fra, til, tid)
-            kol = [p for p in kol if any(l["mode"] != "foot" for l in p["legs"])] or kol
-            best = min(kol, key=lambda p: p["duration"])
-            r["kollektivMin"] = round(best["duration"] / 60)
-            r["bytter"] = max(0, sum(1 for l in best["legs"] if l["mode"] != "foot") - 1)
-            r["rute"] = beskriv(best)
-            r["gangKollektivMin"] = round(sum(l["duration"] for l in best["legs"] if l["mode"] == "foot") / 60)
-        except Exception as e:
-            r["kollektivFeil"] = str(e)[:200]
-        try:
-            g = tur(fra, til, tid, {"directMode": "foot", "transportModes": []}, 1)[0]
-            r["gangMin"] = round(g["duration"] / 60)
-            r["gangKm"] = round(g["distance"] / 1000, 1)
-        except Exception as e:
-            r["gangFeil"] = str(e)[:200]
+        if os.environ.get("REISETID_KILDE", "").lower() != "entur":
+            try:
+                r.update(google_reise(fra, til, tid), kilde="Google Maps")
+            except Exception as e:
+                r["googleFeil"] = str(e)[:200]
+        if r.get("kilde") != "Google Maps":
+            r.update(entur_reise(fra, til, tid), kilde="Entur")
         try:
             s = tur(fra, til, tid, {"directMode": "bicycle", "transportModes": []}, 1)[0]
             r["sykkelMin"] = round(s["duration"] / 60)

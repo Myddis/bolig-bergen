@@ -83,7 +83,8 @@ Sikkerhetskopi i repoet (`data/leiligheter/<finnkode>.json`) tas bare når bruke
   // Reisetid (scripts/reisetid.py), én nøkkel per id under arbeidssteder og steder i config.json.
   // «sentrum» (Byparken) er bare til informasjon, ikke må-krav eller beliggenhetsscore.
   "pendling": {
-    "samboer": { "kollektivMin": 28, "bytter": 0, "rute": "Bybanen 1", "gangMin": 58, "gangKm": 4.3, "sykkelMin": 25 },
+    // kilde: "Google Maps" (kollektiv og gange) eller "Entur" (reserve). Sykkel er alltid Entur.
+    "samboer": { "kollektivMin": 28, "bytter": 0, "rute": "Bybanen 1", "gangMin": 58, "gangKm": 4.3, "sykkelMin": 25, "kilde": "Google Maps" },
     "meg":     { "kollektivMin": 12, "bytter": 0, "rute": "Buss 610", "gangMin": 25, "gangKm": 1.8, "sykkelMin": 14 },
     "sentrum": { "kollektivMin": 16, "bytter": 0, "rute": "Buss 12", "gangMin": 69, "gangKm": 4.9, "sykkelMin": 18 }
   },
