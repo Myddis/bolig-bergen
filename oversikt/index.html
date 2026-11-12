@@ -367,7 +367,7 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
   };
 
   // ---------- hjelpere for data ----------
-  const totalpris = (b) => b.totalpris ?? ((b.prisantydning ?? 0) + (b.fellesgjeld ?? 0) || null);
+  const totalpris = (b) => b.totalpris ?? ((b.prisantydning ?? 0) + (b.omkostninger ?? 0) + (b.fellesgjeld ?? 0) || null);
   const krm2 = (b) => b.krPerM2 ?? (b.braI && totalpris(b) ? Math.round(totalpris(b) / b.braI) : null);
   const reise = (b, id) => {
     const p = b.pendling && b.pendling[id];
@@ -701,7 +701,8 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
   function detailHTML(b) {
     const tp = totalpris(b);
     const kv = [
-      ["Totalpris", mill(tp)], ["Prisantydning", kr(b.prisantydning)],
+      ["Totalpris (inkl. omk.)", mill(tp)], ["Prisantydning", kr(b.prisantydning)],
+      ["Maks bud innenfor budsjett", kr(b.maksBud)], ["Pris inkl. fellesgjeld", kr(b.prisInklFellesgjeld)],
       ["Fellesgjeld", kr(b.fellesgjeld)], ["Felleskost./mnd", kr(b.fellesMnd)],
       ["Kr/m² (BRA-i)", krm2(b) ? nf.format(krm2(b)) + " kr" : "–"], ["Månedskostnad (est.)", kr(b.mndKostnad)],
       ["BRA-i / BRA", `${b.braI ?? "–"} / ${b.bra ?? "–"} m²`], ["Soverom / rom", `${b.soverom ?? "–"} / ${b.rom ?? "–"}`],

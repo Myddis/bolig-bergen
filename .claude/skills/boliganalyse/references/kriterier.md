@@ -8,7 +8,7 @@ Tallene brukes i `scripts/beregn.py`, som leser blokken under. Behold formatet `
 
 ```kriterier
 egenkapital: 730000          # kr tilgjengelig egenkapital
-maksTotalpris: 4900000       # finansieringsbevis, inkludert fellesgjeld (prisantydning/bud + fellesgjeld)
+maksTotalpris: 4900000       # finansieringsbevis; gjelder totalpris som på Finn: bud + omkostninger + fellesgjeld
 rente: 5.5                   # nominell rente, Fana Sparebank Boliglån Ung, satt med margin
 nedbetalingAar: 30           # nedbetalingstid boliglån, år
 maksMndKostnad: 25000        # smertegrense for samlet månedskostnad (lån + felleskost. + avgifter), før rentefradrag
@@ -25,7 +25,7 @@ Lånet er innvilget ut fra framtidig inntekt (finansieringsbevis), så det sjekk
 ## Må-krav
 Brudd på et må-krav gir maks 30 i «Mine kriterier», maks 45 i totalscore og et rødt flagg.
 
-- [ ] **Totalpris ≤ 4,9 mill** (prisantydning + fellesgjeld). Er prisantydningen over, skriv hvilket bud som trengs (`budForBudsjett`). Kravet regnes som brutt hvis budet må under prisantydningen.
+- [ ] **Totalpris ≤ 4,9 mill** (som på Finn: prisantydning + omkostninger + fellesgjeld). `maksBud` er høyeste bud innenfor grensen. Er totalprisen ved prisantydning over, er kravet brutt, og `budForBudsjett` viser hvilket bud som trengs.
 - [ ] **Soverom:** minst 2, **eller** 1 soverom på minst 14 m².
 - [ ] **Reisetid ≤ 30 min** for **både** Håkon og Camilla (raskeste av kollektiv og gange).
 - [ ] **Månedskostnad ≤ 25 000 kr** (`mndKostnad`, før rentefradrag).

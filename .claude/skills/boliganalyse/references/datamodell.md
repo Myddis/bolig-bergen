@@ -27,13 +27,15 @@ Sikkerhetskopi i repoet (`data/leiligheter/<finnkode>.json`) tas bare når bruke
   // Pris og kostnader
   "prisantydning": 4100000,
   "fellesgjeld": 250000,
-  "totalpris": 4350000,                          // beregn.py
+  "totalpris": 4462000,                          // beregn.py, som på Finn: prisantydning + omkostninger + fellesgjeld
+  "prisInklFellesgjeld": 4350000,                // beregn.py, markedsverdi uten omkostninger (brukes til kr/m² og investering)
+  "maksBud": 4680000,                            // beregn.py, høyeste bud som holder totalpris ≤ maksTotalpris
   "omkostninger": 112000,
   "fellesMnd": 3900,
   "fellesDekker": "Kommunale avg., TV/internett, varmtvann",
   "kommunaleAvgAar": null,                       // null hvis inkludert i fellesMnd
   "eiendomsskattAar": null,
-  "krPerM2": 75000,                              // beregn.py (totalpris / BRA-i)
+  "krPerM2": 75000,                              // beregn.py ((prisantydning + fellesgjeld) / BRA-i)
   "felleskostPerM2": 67,                         // beregn.py
   "mndKostnad": 24500,                           // beregn.py (lån + felles + avgifter), før rentefradrag
   "mndKostnadEtterFradrag": 22300,               // beregn.py, første år

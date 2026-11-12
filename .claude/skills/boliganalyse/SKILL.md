@@ -116,7 +116,7 @@ python3 scripts/reisetid.py <lat> <lon>
 
 ### 7. Analyse og score
 1. Bygg dokumentet etter `references/datamodell.md`, og skriv det til `<scratchpad>/<finnkode>.json`.
-2. Kjør `python3 scripts/beregn.py <scratchpad>/<finnkode>.json`. Skriptet fyller inn `totalpris`, `krPerM2`, `felleskostPerM2`, `mndKostnad`, `mndKostnadEtterFradrag`, `budForBudsjett` og `investering`. Det sier også fra om manglende felt og brutte må-krav for pris og månedskostnad.
+2. Kjør `python3 scripts/beregn.py <scratchpad>/<finnkode>.json`. Skriptet fyller inn `totalpris` (som på Finn: prisantydning + omkostninger + fellesgjeld), `prisInklFellesgjeld`, `maksBud`, `krPerM2` (uten omkostninger), `felleskostPerM2`, `mndKostnad`, `mndKostnadEtterFradrag`, `budForBudsjett` og `investering`. Det sier også fra om manglende felt og brutte må-krav for pris og månedskostnad.
 3. Hent de andre boligene for sammenligning med `ArtifactData list` (samling `leiligheter`, `out_dir` i scratchpad). Bruk median kr/m² i samme bydel når det finnes minst tre andre.
 4. Fyll inn `soveromM2` (størrelse på hvert soverom) og `storreJobber` (større jobber de neste 5 årene). Sjekk alle må-krav i `kriterier.md`.
 5. Sett de seks delscorene (pris, tilstand, okonomi, beliggenhet, kriterier, investering) og total score etter `analyseregler.md` og vektene i `kriterier.md`. Skriv en kort begrunnelse for hver delscore i `delscoreBegrunnelse`.
@@ -139,7 +139,7 @@ python3 scripts/reisetid.py <lat> <lon>
 ### 9. Svar til brukeren
 Kort i chatten, høyst ca. 15 linjer:
 - Adresse, bydel, totalpris, BRA-i og score (med delscorer på én linje). Skriv «foreløpig» hvis det gjelder.
-- Budsjett: innenfor 4,9 mill eller ikke (og hvilket bud som trengs), månedskostnad før og etter rentefradrag, og år før kjøpet lønner seg mot å leie.
+- Budsjett: innenfor 4,9 mill eller ikke, og høyeste bud innenfor (`maksBud`), månedskostnad før og etter rentefradrag, og år før kjøpet lønner seg mot å leie.
 - Reisetid for begge (kollektiv / gange) og nærmeste Bybane-holdeplass.
 - De tre viktigste styrkene og svakhetene.
 - Røde flagg.

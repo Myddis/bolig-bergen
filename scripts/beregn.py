@@ -2,9 +2,10 @@
 
 Bruk:  python3 scripts/beregn.py data/leiligheter/<finnkode>.json
 
-Regner ut: totalpris, krPerM2, felleskostPerM2, mndKostnad, mndKostnadEtterFradrag,
+Totalpris regnes som på Finn: prisantydning + omkostninger + fellesgjeld.
+Regner ut: totalpris, prisInklFellesgjeld, maksBud, krPerM2 (uten omkostninger), felleskostPerM2, mndKostnad, mndKostnadEtterFradrag,
 budForBudsjett og investering (år før kjøp lønner seg mot å leie, formue om 5 år).
-Lånebeløp = totalpris - fellesgjeld + omkostninger - egenkapital (fellesgjeld betjenes via felleskost.).
+Lånebeløp = prisantydning + omkostninger - egenkapital (fellesgjeld betjenes via felleskost.).
 Økonomiske forutsetninger leses fra ```kriterier-blokker i references/kriterier.md.
 """
 
@@ -51,21 +52,27 @@ def main(sti):
     mangler = []
 
     pa, fg = d.get("prisantydning"), d.get("fellesgjeld") or 0
-    if pa is None and d.get("totalpris") is None:
-        mangler.append("prisantydning/totalpris")
-    if d.get("totalpris") is None and pa is not None:
-        d["totalpris"] = round(pa + fg)
+    omk = d.get("omkostninger") or 0
+    if pa is None:
+        mangler.append("prisantydning")
+    if not d.get("omkostninger"):
+        mangler.append("omkostninger")
+    # Totalpris som på Finn: prisantydning + omkostninger + fellesgjeld.
+    # Markedsverdi (uten omkostninger) brukes til kr/m² og investeringsberegningen.
+    verdi = round(pa + fg) if pa is not None else None
+    if pa is not None:
+        d["totalpris"] = round(pa + omk + fg)
+    d["prisInklFellesgjeld"] = verdi
     tp = d.get("totalpris")
 
     areal = d.get("braI") or d.get("pRom")
     if not areal:
         mangler.append("braI")
-    d["krPerM2"] = round(tp / areal) if tp and areal else None
+    d["krPerM2"] = round(verdi / areal) if verdi and areal else None
     d["felleskostPerM2"] = round(d["fellesMnd"] / areal) if d.get("fellesMnd") and areal else None
 
-    if tp and "egenkapital" in k and "rente" in k:
-        omk = d.get("omkostninger") or 0
-        laan = max(0, tp - fg + omk - k["egenkapital"])
+    if verdi and "egenkapital" in k and "rente" in k:
+        laan = max(0, pa + omk - k["egenkapital"])
         aar = int(k.get("nedbetalingAar", 30))
         lan_mnd = annuitet(laan, k["rente"], aar)
         felles = d.get("fellesMnd") or 0
@@ -82,15 +89,23 @@ def main(sti):
         if not d.get("fellesMnd"):
             mangler.append("fellesMnd")
         if "husleie" in k and "prisvekst" in k:
-            d["investering"] = investering(tp, fg, laan, lan_mnd, felles + avg, k)
+            d["investering"] = investering(verdi, fg, laan, lan_mnd, felles + avg, k)
     else:
         d["mndKostnad"] = None
 
+    # Høyeste bud som holder totalpris (inkl. omkostninger) innenfor maksTotalpris.
+    # Selveier: dokumentavgift 2,5 % av kjøpesummen; resten av omkostningene regnes som faste.
     maks = k.get("maksTotalpris")
-    d["budForBudsjett"] = round(maks - fg) if maks and tp and tp > maks else None
+    if maks and pa is not None:
+        if (d.get("eieform") or "").lower() == "selveier":
+            fast = max(0, omk - 0.025 * pa)
+            d["maksBud"] = round((maks - fg - fast) / 1.025)
+        else:
+            d["maksBud"] = round(maks - fg - omk)
+    d["budForBudsjett"] = d.get("maksBud") if maks and tp and tp > maks else None
 
     p.write_text(json.dumps(d, ensure_ascii=False, indent=1) + "\n")
-    print(json.dumps({k2: d.get(k2) for k2 in ("totalpris", "krPerM2", "felleskostPerM2", "mndKostnad",
+    print(json.dumps({k2: d.get(k2) for k2 in ("totalpris", "prisInklFellesgjeld", "maksBud", "krPerM2", "felleskostPerM2", "mndKostnad",
                                                "mndKostnadEtterFradrag", "mndKostnadForklaring", "budForBudsjett", "investering")},
                      ensure_ascii=False, indent=1))
     if mangler:

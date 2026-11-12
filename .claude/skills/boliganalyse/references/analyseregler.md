@@ -54,7 +54,8 @@ Bruk bare som anslag, merket «anslag», og oppgi intervallet.
   3. din egen vurdering, som da skrives som usikker i `delscoreBegrunnelse`.
 - Utgangspunkt 70 når prisen er lik referansen. Juster ±10 for hver 5 % under/over, og hold resultatet mellom 10 og 100.
 - Trekk 5–15 hvis kjent oppussingsbehov ikke ser ut til å være priset inn.
-- Trekk 20 hvis totalprisen er over `maksTotalpris`, og skriv hvilket bud som trengs (`budForBudsjett`).
+- Trekk 20 hvis totalprisen (inkl. omkostninger, som på Finn) er over `maksTotalpris`, og skriv hvilket bud som trengs (`budForBudsjett`).
+- Kr/m² sammenlignes alltid uten omkostninger (`krPerM2` = (prisantydning + fellesgjeld) / BRA-i), slik at andel og selveier blir sammenlignbare.
 
 ### Tilstand (`tilstand`)
 - Start på 100.
