@@ -9,7 +9,8 @@ Tallene brukes i `scripts/beregn.py`, som leser blokken under. Behold formatet `
 ```kriterier
 egenkapital: 730000          # kr tilgjengelig egenkapital
 maksTotalpris: 4900000       # finansieringsbevis; gjelder totalpris som på Finn: bud + omkostninger + fellesgjeld
-rente: 5.5                   # nominell rente, Fana Sparebank Boliglån Ung, satt med margin
+rente: 5.5                   # nominell rente, Fana Sparebank Boliglån Ung (5,45 % fra 29.09.2026), satt med margin
+renteGront: 5.25             # Fana Sparebank Grønt boliglån (5,20 % fra 29.09.2026) + samme margin. Gjelder energimerke A eller B (bare A hvis bygget etter 2019)
 nedbetalingAar: 30           # nedbetalingstid boliglån, år
 maksMndKostnad: 28000        # smertegrense for samlet månedskostnad (lån + felleskost. + avgifter), før rentefradrag. Hevet fra 25 000 i nov. 2026
 husleie: 20540               # dagens husleie, kr/mnd, brukt i investeringsberegningen
@@ -22,6 +23,8 @@ rentefradrag: 22             # skattefradrag på renteutgifter, %
 ```
 
 Lånet er innvilget ut fra framtidig inntekt (finansieringsbevis), så det sjekkes ikke mot 5 ganger inntekten.
+
+Energimerket påvirker renten. Med energimerke A eller B (bare A hvis boligen er bygget etter 2019) kan vi få Grønt boliglån i Fana Sparebank, som i dag er 0,25 prosentpoeng lavere enn Boliglån Ung. `beregn.py` bruker da `renteGront` i månedskostnad, budsjett og investering, og setter `rente` og `grontLan` i dokumentet. Er energimerket ukjent, regnes det med vanlig rente. Sjekk satsene i Fana Sparebanks prisliste av og til.
 
 ## Må-krav
 Brudd på et må-krav gir maks 30 i «Mine kriterier», maks 45 i totalscore og et rødt flagg.
@@ -44,6 +47,7 @@ Hvert oppfylt ønske gir pluss i «Mine kriterier». Vekt: 1 = litt viktig, 3 = 
 | Gode solforhold | 3 |
 | Kort vei til kollektiv: Bybanen under 700 m eller buss under 400 m å gå | 3 |
 | Lave felleskostnader (under 45 kr/m² BRA-i per mnd) | 3 |
+| Energimerke A eller B (gir grønt boliglån med lavere rente) | 2 |
 | Innflyttingsklar (bare overflate de neste 5 årene) | 2 |
 | BRA-i over 60 m² | 1 |
 | Heis (hvis 3. etasje eller høyere) | 1 |

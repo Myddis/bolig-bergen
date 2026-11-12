@@ -39,6 +39,8 @@ Sikkerhetskopi i repoet (`data/leiligheter/<finnkode>.json`) tas bare når bruke
   "felleskostPerM2": 67,                         // beregn.py
   "mndKostnad": 24500,                           // beregn.py (lån + felles + avgifter), før rentefradrag
   "mndKostnadEtterFradrag": 22300,               // beregn.py, første år
+  "rente": 5.5,                                  // beregn.py, renten som er brukt (renteGront ved grønt boliglån)
+  "grontLan": false,                             // beregn.py, true ved energimerke A/B (bare A hvis bygget etter 2019), null hvis energimerket er ukjent
   "budForBudsjett": null,                        // beregn.py: maks bud for å holde totalpris ≤ maksTotalpris, null hvis innenfor
   "mndKostnadForklaring": "Lån 3,55 mill, 5,2 %, 30 år: 19 500 + felles 3 900 + …",
 

@@ -773,11 +773,12 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
       ["Kr/m² (BRA-i)", krm2(b) ? nf.format(krm2(b)) + " kr" : "–"], ["Månedskostnad (est.)", kr(b.mndKostnad)],
       ["BRA-i / BRA", `${b.braI ?? "–"} / ${b.bra ?? "–"} m²`], ["Soverom / rom", `${b.soverom ?? "–"} / ${b.rom ?? "–"}`],
       ["Etasje", b.etasje ?? "–"], ["Byggeår", b.byggeaar ?? "–"],
-      ["Eieform", b.eieform || "–"], ["Energimerke", b.energimerke || "–"],
+      ["Eieform", b.eieform || "–"], ["Energimerke", b.energimerke ? b.energimerke + (b.grontLan ? " · grønt boliglån" : "") : "Ukjent"],
       ["Omkostninger", kr(b.omkostninger)], ["Kommunale avg./år", kr(b.kommunaleAvgAar)],
       ["Nærmeste Bybane", b.bybane && b.bybane.stopp ? `${b.bybane.stopp}, ${nf.format(b.bybane.meter)} m` : "–"],
       ["Nærmeste buss", b.buss && b.buss.stopp ? `${b.buss.stopp}, ${nf.format(b.buss.meter)} m` : "–"],
       ["Mnd. etter rentefradrag", kr(b.mndKostnadEtterFradrag)],
+      ["Rente i beregningen", b.rente != null ? String(b.rente).replace(".", ",") + " %" + (b.grontLan ? " (grønt lån)" : "") : "–"],
     ];
     const extras = [b.heis ? "Heis" : null, b.balkong ? "Balkong/terrasse" : null, b.parkering ? "Parkering: " + b.parkering : null].filter(Boolean);
     const commRows = maal().map((a) => {

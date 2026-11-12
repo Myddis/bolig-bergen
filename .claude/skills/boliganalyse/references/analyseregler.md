@@ -97,6 +97,7 @@ Bruk bare som anslag, merket «anslag», og oppgi intervallet.
 - Legg til poeng for oppfylte ønsker etter vekt, +3 per vektpoeng, maks 100.
 - Et ønske som ikke er oppfylt gir 0, ikke trekk. Trekk bare for klare motsetninger til noe brukeren har skrevet at de ikke vil ha.
 - «Kort vei til kollektiv» er oppfylt når `bybane.meter` er under 700 eller `buss.meter` er under 400 (gangavstand fra `reisetid.py`).
+- «Energimerke A eller B» er oppfylt når `grontLan` er `true` (fra `beregn.py`).
 - «Gode solforhold» er oppfylt når `sol.solscore` er minst 65, eller når salgsoppgaven tydelig beskriver gode solforhold og uteplass mot sør eller vest.
 - Eieform: selveier gir pluss etter vekt. Andel og aksje gir verken pluss eller trekk.
 - **Må-krav** sjekkes mot `kriterier.md`:
@@ -150,7 +151,7 @@ Har strøket få salg (under ca. 100 siste 12 mnd), skriv at tallet er usikkert.
 | `marked.dagerPaaMarkedet` ≤ 14 | +5 |
 | 2–3 rom på 45–80 m² | +5 |
 | Uteplass | +5 |
-| Energimerke F eller G | −5 |
+| Energimerke A eller B / F eller G | +5 / −5 |
 | 4. etasje eller høyere uten heis | −10 |
 | Kjent støy eller trafikk | −5 |
 

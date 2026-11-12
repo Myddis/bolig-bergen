@@ -47,11 +47,29 @@ def kr(v):
     return f"{round(v):,}".replace(",", " ")
 
 
+def gront_lan(d):
+    """Fana Sparebank Grønt boliglån: energimerke A eller B, men bare A for boliger bygget etter 2019."""
+    merke = str(d.get("energimerke") or "").strip().upper()[:1]
+    if not merke:
+        return None  # ukjent
+    if (d.get("byggeaar") or 0) >= 2020:
+        return merke == "A"
+    return merke in ("A", "B")
+
+
 def main(sti):
     p = Path(sti)
     d = json.loads(p.read_text())
     k = les_kriterier()
     mangler = []
+
+    # Renten avhenger av energimerket: grønt boliglån gir lavere rente enn Boliglån Ung.
+    d["grontLan"] = gront_lan(d)
+    if d["grontLan"] and "renteGront" in k:
+        k["rente"] = k["renteGront"]
+    d["rente"] = k.get("rente")
+    if d["grontLan"] is None:
+        mangler.append("energimerke (avgjør om grønt boliglån med lavere rente er mulig)")
 
     pa, fg = d.get("prisantydning"), d.get("fellesgjeld") or 0
     omk = d.get("omkostninger") or 0
