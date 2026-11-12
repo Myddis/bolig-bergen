@@ -11,7 +11,7 @@ Privat verktøy for å vurdere leiligheter i Bergen. Svar på norsk (bokmål).
 - `scripts/geokod.py`: adresse til koordinater og bydel (Kartverket, ws.geonorge.no).
 - `scripts/reisetid.py`: kollektiv og gange (Google Maps Routes API, Entur som reserve), sykkel og nærmeste holdeplass (Entur).
 - `scripts/omrade.py`: prisutvikling i strøket, budmarked, solscore (Eiendomssjekk) og Bergen-indeks (SSB).
-- `scripts/beregn.py`: totalpris, kr/m², månedskostnad og investering i tre scenarier.
+- `scripts/beregn.py`: totalpris, kr/m², månedskostnad og resultat ved salg etter 3 og 5 år i tre scenarier.
 - `scripts/bygg_kart.py`: bygger `oversikt/bergen.topo.json` fra Kartverket N50 og SSB-bydeler. Kjøres sjelden.
 - `oversikt/index.html` + `oversikt/bergen.topo.json`: kilden til artifacten.
   - Publiser på nytt med Artifact-verktøyet, `url` = artifact-URL-en over og `files: {"bergen.topo.json": "oversikt/bergen.topo.json"}`.

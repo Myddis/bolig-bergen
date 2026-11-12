@@ -14,13 +14,14 @@ Svar alltid på norsk (bokmål). Vær konkret og ærlig: skriv hva kildene fakti
 ## Filer du bruker
 
 - `config.json`: artifact-URL, arbeidssteder (koordinater) og tidspunkt for reisetid.
-- `references/kriterier.md`: brukerens krav, ønsker, økonomi og vekter. Les den hver gang, den kan ha endret seg.
+- `references/kriterier.md`: økonomi, rammebetingelser, søkeprofil og vekter. Les den hver gang, den kan ha endret seg.
+- `references/boligscore.md`: scoremodellen («Boligscore – førstegangskjøp i Bergen») som reglene bygger på.
 - `references/analyseregler.md`: sjekklister, røde flagg, scoringsregler og foreløpig modus. Følg den.
 - `references/datamodell.md`: nøyaktig format på dokumentet som lagres.
 - `scripts/geokod.py "<adresse>"`: koordinater og bydel (Kartverket + SSB).
 - `scripts/reisetid.py <lat> <lon>`: kollektiv og gange til arbeidsstedene og sentrum fra Google Maps (Entur som reserve), sykkel og nærmeste Bybane- og bussholdeplass fra Entur.
 - `scripts/omrade.py <gnr> <bnr>`: prisutvikling i strøket (tinglyste salg), budmarked, solscore og kollektivfrekvens (Eiendomssjekk), og Bergen-snitt (SSB).
-- `scripts/beregn.py <bolig.json>`: fyller inn utregnede tall (totalpris, kr/m², månedskostnad, investering i tre scenarier).
+- `scripts/beregn.py <bolig.json>`: fyller inn utregnede tall (totalpris, kr/m², månedskostnad, resultat ved salg etter 3 og 5 år i tre scenarier).
 
 `references/` ligger i skill-mappen (`.claude/skills/boliganalyse/references/`). Alle andre stier er relative til repo-roten.
 Arbeidsfiler (annonsetekst, PDF-tekst, dokument-JSON) legges i scratchpad-mappen, ikke i repoet.
@@ -111,7 +112,7 @@ python3 scripts/geokod.py "<gateadresse>, <postnr>"
 python3 scripts/reisetid.py <lat> <lon>
 ```
 
-- Lagre hvert arbeidssted og hvert sted under `pendling.<id>` (`kollektivMin`, `bytter`, `rute`, `gangMin`, `gangKm`, `sykkelMin`). `pendling.sentrum` er bare til informasjon: den teller ikke i må-kravet om reisetid eller i beliggenhetsscoren.
+- Lagre hvert arbeidssted og hvert sted under `pendling.<id>` (`kollektivMin`, `bytter`, `rute`, `gangMin`, `gangKm`, `sykkelMin`). `pendling.sentrum` teller som en firedel av tilgjengeligheten under Beliggenhet.
 - Lagre `_bybane` som `bybane` og `_buss` som `buss` (`stopp`, `meter`, `gangMin`). `meter` er gangavstand.
 - Hopp over `_beregnet`. Behold `kilde` ("Google Maps" eller "Entur"), men ikke `googleFeil`. Har en reisetid `kilde: "Entur"` fordi Google feilet, nevn det i svaret og i `mangler`: Entur undervurderer noen gangstrekninger. Feiler begge, sett feltene til `null` og nevn det.
 
@@ -138,12 +139,13 @@ Mangler områdetall (feil fra Eiendomssjekk), gjør ett WebSearch-søk etter pri
 
 ### 7. Analyse og score
 1. Bygg dokumentet etter `references/datamodell.md`, og skriv det til `<scratchpad>/<finnkode>.json`.
-2. Kjør `python3 scripts/beregn.py <scratchpad>/<finnkode>.json`. Skriptet fyller inn `totalpris` (som på Finn: prisantydning + omkostninger + fellesgjeld), `prisInklFellesgjeld`, `maksBud`, `krPerM2` (uten omkostninger), `felleskostPerM2`, `mndKostnad`, `mndKostnadEtterFradrag`, `budForBudsjett` og `investering`. Det sier også fra om manglende felt og brutte må-krav for pris og månedskostnad.
+2. Kjør `python3 scripts/beregn.py <scratchpad>/<finnkode>.json`. Skriptet fyller inn `totalpris` (som på Finn: prisantydning + omkostninger + fellesgjeld), `prisInklFellesgjeld`, `maksBud`, `krPerM2` (uten omkostninger), `felleskostPerM2`, `mndKostnad`, `mndKostnadEtterFradrag`, `budForBudsjett` og `resultatVedSalg`. Det sier også fra om manglende felt, totalpris over kjøpsrammen og månedskostnad over grensen.
 3. Hent de andre boligene for sammenligning med `ArtifactData list` (samling `leiligheter`, `out_dir` i scratchpad). Bruk median kr/m² i samme bydel når det finnes minst tre andre.
-4. Fyll inn `soveromM2` (størrelse på hvert soverom), `kontor` (eget rom som kan brukes som kontor, se soverom-kravet i `kriterier.md`; `null` hvis det ikke finnes), `storreJobber` (større jobber de neste 5 årene) og `verdiokningOppussing` (anslått verdiløft fra oppussingen, se `analyseregler.md`). Kjør `beregn.py` på nytt etter at `verdiokningOppussing` er satt. Sjekk alle må-krav i `kriterier.md`.
+4. Fyll inn `soveromM2` (størrelse på hvert soverom), `kontor` (eget rom på minst ca. 5 m² som kan brukes som kontor; `null` hvis det ikke finnes), `storreJobber` (større jobber de neste 5 årene) og `verdiokningOppussing` (anslått verdiløft fra oppussingen, se `analyseregler.md`). Kjør `beregn.py` på nytt etter at `verdiokningOppussing` er satt. Sjekk søkeprofilen i `kriterier.md` og legg brudd i `rodeFlagg`.
    - `mndKostnadForventetPris` er månedskostnaden hvis boligen selges med typisk budavvik i strøket. Er den over grensen, legg det i `rodeFlagg`, selv om kravet er oppfylt ved prisantydning.
-   - Beliggenhet: sett `beliggenhetDeler` (avstand, sol, omgivelser) etter `analyseregler.md`. Les støysonekartet, nabolagsprofilen (støy), beskrivelsen av utsikt, natur og turområder, og retningen på uteplassen i salgsoppgaven. Lagre funnene i `omgivelser`.
-5. Sett de seks delscorene (pris, tilstand, okonomi, beliggenhet, kriterier, investering) og total score etter `analyseregler.md` og vektene i `kriterier.md`. Skriv en kort begrunnelse for hver delscore i `delscoreBegrunnelse`.
+   - Beliggenhet: sett `beliggenhetDeler` (tilgjengelighet, sol, omgivelser) etter `analyseregler.md`. Les støysonekartet, nabolagsprofilen (støy og trygghet), beskrivelsen av utsikt, natur og turområder, og retningen på uteplassen i salgsoppgaven. Lagre funnene i `omgivelser`.
+   - Planløsning og trivsel: les plantegningen og beskrivelsen (romfordeling, gjennomgangsrom, boder og oppbevaring, lys og innsyn).
+5. Sett de ni kategoriene (`kategorier`, med grunnlag, karakter og poeng), `score`, `tolkning` og `risiko` etter «Boligscore» i `analyseregler.md` og vektene i `kriterier.md`. Skriv en kort begrunnelse for hver kategori i `kategoriBegrunnelse`.
 6. Mangler pris- eller økonomitall: følg «Foreløpig modus» i `analyseregler.md` (`forelopig: true`, `manglerTall`).
 7. Skriv innholdet:
    - `oppsummering`: 2–4 setninger, med en klar anbefaling (verdt en visning eller ikke, og hvorfor).
@@ -162,9 +164,9 @@ Mangler områdetall (feil fra Eiendomssjekk), gjør ett WebSearch-søk etter pri
 
 ### 9. Svar til brukeren
 Kort i chatten, høyst ca. 15 linjer:
-- Adresse, bydel, totalpris, BRA-i og score (med delscorer på én linje). Skriv «foreløpig» hvis det gjelder.
+- Adresse, bydel, totalpris, BRA-i, score med tolkning og risikonivå, og karakterene for de ni kategoriene på én linje. Skriv «foreløpig» hvis det gjelder.
 - Budsjett: innenfor 4,9 mill eller ikke, og høyeste bud innenfor (`maksBud`), og månedskostnad før og etter rentefradrag og ved forventet pris i strøket.
-- Investering: strøkets vekst mot Bergen, og hvor mange år kjøpet tar på å lønne seg i det pessimistiske, forventede og optimistiske scenariet.
+- Resultat ved salg etter 3 og 5 år i det pessimistiske, nøytrale og optimistiske scenariet, og strøkets vekst mot Bergen.
 - Reisetid for begge (kollektiv / gange) og nærmeste Bybane-holdeplass.
 - De tre viktigste styrkene og svakhetene.
 - Røde flagg.
@@ -197,7 +199,7 @@ Brukes når oversikten har startet den planlagte oppgaven «Boligjakt: analysek�
 - **«Sammenlign X og Y»:** les begge dokumentene og svar med en tabell og en anbefaling.
 - **«Fjern / marker som solgt»:** sett `status: "solgt"` og `solgtDato` (fra `date -u`), eller slett bare hvis brukeren ber om det eksplisitt.
 - **«Ta sikkerhetskopi»:** list alle dokumentene med `ArtifactData list` og `out_dir: data/`. Commit `data/leiligheter/` og push.
-- **Endrede kriterier** (f.eks. ny rente, egenkapital eller prisvekst): for hver bolig, kjør `beregn.py` på dokumentet, sett kriterier- og investeringsscore og total score på nytt, og oppdater med `if_version`.
+- **Endrede kriterier** (f.eks. ny rente, egenkapital, prisvekst eller vekter): for hver bolig, kjør `beregn.py` på dokumentet, sett de berørte kategoriene og totalscoren på nytt, og oppdater med `if_version`.
 - **Nye arbeidssteder:**
   1. Oppdater `config.json`.
   2. Oppdater dokumentet `oppsett/arbeidssteder` i databasen: arbeidssteder i feltet `liste`, andre steder (sentrum) i feltet `steder`, samme format.

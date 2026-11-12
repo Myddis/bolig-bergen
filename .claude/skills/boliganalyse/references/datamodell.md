@@ -28,7 +28,7 @@ Sikkerhetskopi i repoet (`data/leiligheter/<finnkode>.json`) tas bare når bruke
   "prisantydning": 4100000,
   "fellesgjeld": 250000,
   "totalpris": 4462000,                          // beregn.py, som på Finn: prisantydning + omkostninger + fellesgjeld
-  "prisInklFellesgjeld": 4350000,                // beregn.py, markedsverdi uten omkostninger (brukes til kr/m² og investering)
+  "prisInklFellesgjeld": 4350000,                // beregn.py, markedsverdi uten omkostninger (brukes til kr/m² og resultat ved salg)
   "maksBud": 4680000,                            // beregn.py, høyeste bud som holder totalpris ≤ maksTotalpris
   "omkostninger": 112000,
   "fellesMnd": 3900,
@@ -48,7 +48,7 @@ Sikkerhetskopi i repoet (`data/leiligheter/<finnkode>.json`) tas bare når bruke
   "braI": 58, "bra": 63, "braE": 5, "pRom": null,
   "soverom": 2, "rom": 3, "etasje": "3",
   "soveromM2": [12.4, 10.8],                     // størrelse på hvert soverom
-  "kontor": { "m2": 6.5, "navn": "Arbeidsrom", "side": 12 },  // eget rom som kan brukes som kontor (se kriterier.md), ellers null
+  "kontor": { "m2": 6.5, "navn": "Arbeidsrom", "side": 12 },  // eget rom som kan brukes som kontor (Planløsning i analyseregler.md), ellers null
   "byggeaar": 1962, "eieform": "Andel",          // "Selveier" | "Andel" | "Aksje"
   "energimerke": "D", "heis": false, "balkong": true,
   "parkering": "Gateparkering",                  // fritekst eller null
@@ -81,7 +81,7 @@ Sikkerhetskopi i repoet (`data/leiligheter/<finnkode>.json`) tas bare når bruke
   "egenerklaringMerknader": ["Vannskade på bad 2019, utbedret av rørlegger"],
 
   // Reisetid (scripts/reisetid.py), én nøkkel per id under arbeidssteder og steder i config.json.
-  // «sentrum» (Byparken) er bare til informasjon, ikke må-krav eller beliggenhetsscore.
+  // «sentrum» (Byparken) teller i tilgjengelighet under Beliggenhet (¼).
   "pendling": {
     // kilde: "Google Maps" (kollektiv og gange) eller "Entur" (reserve). Sykkel er alltid Entur.
     "samboer": { "kollektivMin": 28, "bytter": 0, "rute": "Bybanen 1", "gangMin": 58, "gangKm": 4.3, "sykkelMin": 25, "kilde": "Google Maps" },
@@ -110,24 +110,29 @@ Sikkerhetskopi i repoet (`data/leiligheter/<finnkode>.json`) tas bare når bruke
   "forventetPris": 4122000,                      // beregn.py: prisantydning × (1 + typisk budavvik i strøket)
   "mndKostnadForventetPris": 25752,              // beregn.py
 
-  // Investering (beregn.py): kjøp mot å fortsette å leie, tre scenarier
-  "investering": {
+  // Resultat ved salg (beregn.py), ikke en del av scoren. Tre scenarier, etter 3 og 5 år.
+  "resultatVedSalg": {
     "scenarier": {
-      "pessimistisk": { "vekst": 0, "breakEvenAar": 10, "verdi5": 4107021, "formueKjop5": 810078, "formueLeie5": 1012890, "gevinst5": -202811 },
-      "forventet":    { "vekst": 5.2, "breakEvenAar": 2, "…": "…" },
-      "optimistisk":  { "vekst": 7.8, "breakEvenAar": 1, "…": "…" }
+      "pessimistisk": { "vekst": 0,   "aar3": { "salgspris": 3990000, "eierkostnader": 690000, "resultat": -780000, "motLeie": -120000 }, "aar5": { "…": "…" } },
+      "forventet":    { "vekst": 5.2, "aar3": { "…": "…" }, "aar5": { "…": "…" } },
+      "optimistisk":  { "vekst": 7.8, "aar3": { "…": "…" }, "aar5": { "…": "…" } }
     },
-    "breakEvenAar": 2, "verdi5": 5291827, "formueKjop5": 1994884, "formueLeie5": 1012890, "gevinst5": 981995,   // = forventet
     "antagelser": "Prisvekst 0 / 5.2 / 7.8 %/år …"
   },
-  "investeringDeler": { "omradeVekst": 40, "verdipotensial": 50, "salgbarhet": 70, "robusthet": 50 },
 
-  // Vurdering
-  "score": 72,                                   // foreløpig score hvis forelopig: true
-  "delscorer": { "pris": 70, "tilstand": 66, "okonomi": 75, "beliggenhet": 80, "kriterier": 70, "investering": 52 },
-  "beliggenhetDeler": { "avstand": 78, "sol": 63, "omgivelser": 75 },   // analyseregler.md, «Beliggenhet»
-  "scoreTrekk": { "reisetid": 3, "mndKostnad": 0 },  // trekk i totalscore for myke må-krav (analyseregler.md, «Totalscore»)
-  "delscoreBegrunnelse": { "pris": "…", "tilstand": "…", "okonomi": "…", "beliggenhet": "…", "kriterier": "…", "investering": "…" },
+  // Vurdering (analyseregler.md, «Boligscore»). karakter 0–10 i halve trinn, poeng = karakter / 10 × vekt
+  "score": 71.9,                                 // sum av poeng (0–100); foreløpig score hvis forelopig: true
+  "tolkning": "Godt potensial",                  // 90+ Eksepsjonelt attraktivt … under 50 Lite attraktivt
+  "kategorier": {
+    "beliggenhet":   { "karakter": 7.5, "poeng": 13.5, "grunnlag": 73 },
+    "kjopspris":     { "karakter": 5,   "poeng": 8.5,  "grunnlag": 50 },
+    "videresalg":    { "…": "…" }, "teknisk": { "…": "…" }, "oppgradering": { "…": "…" },
+    "planlosning":   { "…": "…" }, "fellesokonomi": { "…": "…" }, "trivsel": { "…": "…" }, "lopende": { "…": "…" }
+  },
+  "kategoriBegrunnelse": { "beliggenhet": "…", "kjopspris": "…", "videresalg": "…", "teknisk": "…", "oppgradering": "…",
+                           "planlosning": "…", "fellesokonomi": "…", "trivsel": "…", "lopende": "…" },
+  "beliggenhetDeler": { "tilgjengelighet": 75, "sol": 82, "omgivelser": 70 },
+  "risiko": { "niva": "middels", "grunner": ["TG2 på bad: for lite fall til sluk (PDF s. 15)", "Full salgsoppgave mangler"] },   // lav | middels | hoy
   "oppsummering": "2–4 setninger med anbefaling.",
   "styrker": ["…"],
   "svakheter": ["…"],

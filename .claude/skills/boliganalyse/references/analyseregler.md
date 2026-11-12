@@ -30,7 +30,7 @@
 - Vesentlige «ja»-svar i egenerklæringen: tidligere vannskader, arbeid uten fagfolk, pågående tvister.
 - Forkjøpsrett, eller vedtekter som hindrer dyrehold eller utleie hvis det betyr noe for brukeren.
 - Høy radon, eller ikke målt i sokkel/1. etasje.
-- Et må-krav i `kriterier.md` er brutt (hardt eller mykt).
+- Totalpris over kjøpsrammen, reisetid over 30 min, månedskostnad over grensen eller mer enn én større jobb (se «Røde flagg fra kriteriene deres»).
 
 ## Grove kostnadsintervaller (når takstmannen ikke oppgir tall)
 Bruk bare som anslag, merket «anslag», og oppgi intervallet.
@@ -45,47 +45,41 @@ Bruk bare som anslag, merket «anslag», og oppgi intervallet.
 | Nye vinduer (per stk.) | 10 000–20 000 kr |
 | Overflateoppussing (maling, gulv) per m² | 1 500–3 500 kr |
 
-## Delscorer (0–100)
+## Boligscore (0–100)
+Modellen følger `references/boligscore.md` («Boligscore – førstegangskjøp i Bergen»). Boligen vurderes som egen bolig med salg etter 3–5 år.
 
-### Pris (`pris`)
-- Sammenlign `krPerM2` med:
-  1. `omrade.medianKrM2Leiligheter` fra `scripts/omrade.py` (tinglyste salg i strøket siste kvartal). Juster referansen for alder, standard og beliggenhet innad i strøket, og forklar justeringen. Ellers:
-  2. median kr/m² for andre boliger i samme bydel i oversikten (minst 3), ellers
-  3. referansepris i `kriterier.md`, ellers
-  4. din egen vurdering, som da skrives som usikker i `delscoreBegrunnelse`.
-- Utgangspunkt 70 når prisen er lik referansen. Juster ±10 for hver 5 % under/over, og hold resultatet mellom 10 og 100.
-- Trekk 5–15 hvis kjent oppussingsbehov ikke ser ut til å være priset inn.
-- Trekk 20 hvis totalprisen (inkl. omkostninger, som på Finn) er over `maksTotalpris`, og skriv hvilket bud som trengs (`budForBudsjett`).
-- Kr/m² sammenlignes alltid uten omkostninger (`krPerM2` = (prisantydning + fellesgjeld) / BRA-i), slik at andel og selveier blir sammenlignbare.
+- Hver av de ni kategoriene får et **grunnlag** fra 0 til 100 etter reglene under.
+- Grunnlaget gjøres om til en **karakter** fra 0 til 10 i halve trinn: `karakter = round(grunnlag / 5) / 2`.
+- `poeng = karakter / 10 × vekt`. **Totalscoren** er summen av poengene, med én desimal.
+- Det finnes ingen må-krav, tak eller trekk. Det som tidligere var må-krav, blir røde flagg og påvirker kategoriene og risikonivået.
+- Gi aldri høy karakter fordi informasjon mangler. Sett ukjente forhold nøytralt og skriv dem i `mangler`.
 
-### Tilstand (`tilstand`)
-- Start på 100.
-- TG3: −20 hver på våtrom, tak, drenering, el-anlegg eller vann/avløp, ellers −10.
-- TG2: −6 hver på våtrom, ellers −3.
-- Trekk 5 hvis noe er ikke undersøkt (TGIU) der det burde vært undersøkt.
-- Trekk 5–10 hvis våtrom er over 20 år, og 5 hvis el-anlegget er over 30 år.
-- Laveste verdi er 5.
+Lagre i `kategorier.<navn>` som `{karakter, poeng, grunnlag}`, og begrunn hver kategori i `kategoriBegrunnelse.<navn>`. Vektene står i `kriterier.md`.
 
-### Økonomi i laget (`okonomi`)
-- Start på 80.
-- Fellesgjeld per m² BRA-i: under 5 000 kr gir +10, 5 000–15 000 kr gir 0, over 15 000 kr gir −15.
-- Avdragsfrihet som slutter innen 3 år: −10.
-- Planlagte tiltak med varslet økning i felleskostnadene: −5 til −20.
-- Solid vedlikeholdsfond eller disponible midler: +5.
-- Felleskost. per m² over 55 kr: −10. Under 35 kr: +5.
-- Selveier uten sameie av betydning: sett 75 og begrunn.
-- Hold resultatet mellom 10 og 100.
+| Nøkkel | Kategori | Vekt |
+|---|---|---|
+| `beliggenhet` | Beliggenhet og mikrolokasjon | 18 |
+| `kjopspris` | Kjøpspris og markedsverdi | 17 |
+| `videresalg` | Videresalgspotensial | 15 |
+| `teknisk` | Teknisk tilstand og risiko | 14 |
+| `oppgradering` | Oppgraderings- og verdipotensial | 12 |
+| `planlosning` | Planløsning og areal | 8 |
+| `fellesokonomi` | Sameie/borettslag og fellesøkonomi | 6 |
+| `trivsel` | Egen trivsel og bokvalitet | 5 |
+| `lopende` | Løpende kostnader | 5 |
 
-### Beliggenhet (`beliggenhet`)
-Tre like deler: `beliggenhet = round((avstand + sol + omgivelser) / 3)`. Lagre delene i `beliggenhetDeler: {avstand, sol, omgivelser}` og forklar hver av dem i begrunnelsen. Bydel og strøk gir ingen justering (se `kriterier.md`).
+### Beliggenhet og mikrolokasjon (`beliggenhet`, 18)
+Tre like deler: `grunnlag = (tilgjengelighet + sol + omgivelser) / 3`. Lagre delene i `beliggenhetDeler`. Vurder den konkrete adressen, ikke bare bydelen.
 
-**Avstand.** Den **lengste** av de to reisetidene til jobb (Håkon og Camilla). Hver reisetid er det raskeste av kollektiv og gange. Reisetid til sentrum teller ikke.
-`avstand = 100 − 2 × (minutter − 15)`, mellom 30 og 100. Det gir 100 ved 15 min, 90 ved 20, 80 ved 25, 70 ved 30, 50 ved 40 og 30 ved 50 min eller mer.
+**Tilgjengelighet** = ½ jobb + ¼ sentrum + ¼ kollektiv:
+- **Jobb:** den lengste av reisetidene til Håkon og Camilla. Hver reisetid er det raskeste av kollektiv og gange. `100 − 2 × (minutter − 15)`, mellom 30 og 100.
+- **Sentrum:** reisetid til sentrum (`pendling.sentrum`). `100 − 3 × (minutter − 10)`, mellom 30 og 100.
+- **Kollektiv:** 100 hvis Bybanen er under 700 m eller buss under 400 m å gå. 30 hvis begge er over 1 km. Ellers 60.
 
-**Sol.** Utgangspunkt er `sol.solscore` (0–100) fra `scripts/omrade.py`. Solscoren er målt på bakkenivå ved eiendommens punkt, så juster den:
-- +10 hvis boligen ligger i 4. etasje eller høyere, eller hvis salgsoppgaven eller annonsen beskriver en solrik uteplass mot sør eller vest. Gi bare +10 én gang.
+**Sol.** Utgangspunkt er `sol.solscore` (0–100) fra `scripts/omrade.py`. Den er målt på bakkenivå, så juster:
+- +10 for 4. etasje eller høyere, eller for en solrik uteplass mot sør eller vest. Gi bare +10 én gang.
 - −10 hvis uteplassen eller stuen vender mot nord, eller er beskrevet som skyggefull.
-- Hold resultatet mellom 0 og 100. Mangler solscore, start på 50 og skriv det i `mangler`.
+- Mangler solscore, start på 50 og skriv det i `mangler`.
 
 **Omgivelser.** Start på 60, og juster med tabellen. Hold resultatet mellom 0 og 100.
 
@@ -98,106 +92,159 @@ Tre like deler: `beliggenhet = round((avstand + sol + omgivelser) / 3)`. Lagre d
 | Boligen eller tomten i gul / rød støysone (støysonekart i salgsoppgaven) | −10 / −20 |
 | Nabolagsprofilen (Finn/Nabolag.no) sier mye støy, under ca. 60/100 | −5 |
 | Hovedvei, terminal, industri eller utesteder rett ved | −10 |
+| Trygghet i nabolagsprofilen ≥ 85 / < 60 | +5 / −10 |
 
 - Ligger bare en liten del av tomten i støysone, og nabolagsprofilen sier lite støy (80/100 eller mer), gi halvt trekk.
-- Lagre det som er funnet i `omgivelser` (støy, natur, utsikt og trafikk, med kilde og PDF-side). Det som er ukjent, gir ingen justering. Skriv det i `mangler`.
+- Lagre funnene i `omgivelser` (støy, natur, utsikt og trafikk, med kilde og PDF-side).
 
-### Mine kriterier (`kriterier`)
-- Start på 50.
-- Legg til poeng for oppfylte ønsker etter vekt, +3 per vektpoeng, maks 100.
-- Et ønske som ikke er oppfylt gir 0, ikke trekk. Trekk bare for klare motsetninger til noe brukeren har skrevet at de ikke vil ha.
-- «Kort vei til kollektiv» er oppfylt når `bybane.meter` er under 700 eller `buss.meter` er under 400 (gangavstand fra `reisetid.py`).
-- «Energimerke A eller B» er oppfylt når `grontLan` er `true` (fra `beregn.py`).
-- Eieform: selveier gir pluss etter vekt. Andel og aksje gir verken pluss eller trekk.
-- **Må-krav** sjekkes mot `kriterier.md`:
-  - totalpris (`budForBudsjett` fra `beregn.py`)
-  - soverom (`soverom`, `soveromM2` og `kontor`)
-  - reisetid for begge
-  - `mndKostnad`
-  - antall større jobber (`storreJobber`)
-  - TG3
-- Hvis et **hardt** må-krav er brutt (totalpris, soverom, oppussing, TG3): maks 30, legg bruddet i `rodeFlagg`, og nevn det først i `oppsummering`.
-- **Myke** må-krav (reisetid, månedskostnad) gir ikke tak her. De trekker i totalscoren (se «Totalscore»), og bruddet skal stå i `rodeFlagg` og i `oppsummering`.
+### Kjøpspris og markedsverdi (`kjopspris`, 17)
+- Sammenlign `krPerM2` med:
+  1. `omrade.medianKrM2Leiligheter` fra `scripts/omrade.py`. Juster referansen for alder, standard og beliggenhet innad i strøket, og forklar justeringen. Ellers:
+  2. median kr/m² for andre boliger i samme bydel i oversikten (minst 3), ellers
+  3. din egen vurdering, som da skrives som usikker.
+- Utgangspunkt 70 når prisen er lik referansen. ±10 for hver 5 % under eller over.
+- **Forhandlingsrom:** typisk budavvik i strøket (`marked.avvikProsent`) over +5 % gir −5, og under 0 % gir +5.
+- Kjent oppussingsbehov som ikke ser ut til å være priset inn gir −5 til −15.
+- **Over kjøpsrammen:** er totalprisen ved prisantydning over `maksTotalpris` (4,9 mill), er grunnlaget maks 30. Legg et rødt flagg med `budForBudsjett`.
+- Kr/m² sammenlignes alltid uten omkostninger: (prisantydning + fellesgjeld) / BRA-i.
 
-### Investering (`investering`)
-Satt sammen av fire deler. Regn ut hver del, skriv dem i `investeringDeler` og i begrunnelsen, og sett
-`investering = round(0,30 × A + 0,25 × B + 0,25 × C + 0,20 × D)`.
-Bruk data fra `scripts/omrade.py` (lagret som `omrade`, `marked` og `sol`) og scenariene fra `beregn.py`.
-
-**A. Prisutvikling i strøket (30 %).** Sammenlign `omrade.vekst5aar` med `omrade.bergenVekst5aar` (SSB):
-
-| Strøket mot Bergen | A |
-|---|---|
-| ≥ 1 prosentpoeng over | 100 |
-| 0 til 1 over | 80 |
-| 0 til 1 under | 60 |
-| 1 til 2,5 under | 40 |
-| Mer enn 2,5 under | 20 |
-| Ingen områdetall | 50 (si fra) |
-
-Har strøket få salg (under ca. 100 siste 12 mnd), skriv at tallet er usikkert.
-
-**B. Verdiøkningspotensial (25 %).** Kan oppussing løfte verdien mer enn den koster, eller går pengene bare til å bevare den?
-
-| Situasjon | B |
-|---|---|
-| Gammelt kjøkken, bad eller overflater, eller uutnyttet areal (loft, kjeller), der løftet trolig er større enn kostnaden, og prisen gjenspeiler dagens standard | 90–100 |
-| Innflyttingsklar, lite å hente, men lite å betale | 60 |
-| Vedlikehold som bare bevarer verdien venter (rør, vinduer, ventilasjon, el, fasade), moderat beløp | 40 |
-| Store kostnader uten verdiløft (rørfornying, tak, drenering), eller nylig oppusset av selger og priset deretter (dere betaler for andres oppussing) | 20 |
-
-- Juster +10 hvis `krPerM2` er mer enn 10 % under `omrade.medianKrM2Leiligheter`, og −10 hvis den er mer enn 10 % over.
-- Sett `verdiokningOppussing` (kr) etter disse tommelfingerreglene. De er anslag og skal merkes som det:
-  - overflater (maling, gulv): løft ca. 1–1,5 × kostnaden
-  - nytt kjøkken eller bad der det gamle er utdatert: ca. 0,5–1 × kostnaden
-  - verdibevarende tiltak (rør, vinduer, ventilasjon, el, bereder): ca. 0
-
-**C. Salgbarhet (25 %).** Start på 60, og juster med:
+### Videresalgspotensial (`videresalg`, 15)
+Hvor lett boligen kan selges om 3–5 år, og hvor stor kjøpergruppen er. Start på 50.
 
 | Forhold | Justering |
 |---|---|
-| `sol.solscore` ≥ 70 / ≤ 45 | +10 / −10 |
+| Bred kjøpergruppe: 45–75 m² BRA-i og 1–3 soverom | +15 |
+| Prisvekst i strøket mot Bergen (`omrade.vekst5aar` mot `bergenVekst5aar`): ≥ 1 poeng over / 0–1 over / 0–1 under / 1–2,5 under / mer enn 2,5 under | +15 / +10 / +5 / 0 / −10 |
 | `marked.andelOver` ≥ 70 % | +10 |
 | `marked.dagerPaaMarkedet` ≤ 14 | +5 |
-| 2–3 rom på 45–80 m² | +5 |
 | Uteplass | +5 |
-| Energimerke A eller B / F eller G | +5 / −5 |
+| Selveier | +5 |
 | 4. etasje eller høyere uten heis | −10 |
-| Kjent støy eller trafikk | −5 |
+| Energimerke F eller G | −5 |
 
-Hold resultatet mellom 0 og 100.
+Har strøket få salg (under ca. 100 siste 12 mnd), skriv at veksttallet er usikkert.
 
-**D. Robusthet (20 %).** Hvor lang tid det tar før kjøpet lønner seg i det pessimistiske scenariet (0 % prisvekst, `investering.scenarier.pessimistisk.breakEvenAar`):
+### Teknisk tilstand og risiko (`teknisk`, 14)
+- Start på 100.
+- TG3: −20 hver på våtrom, tak, drenering, el-anlegg eller vann/avløp, ellers −10.
+- TG2: −6 hver på våtrom, ellers −3.
+- Trekk 5 hvis noe er ikke undersøkt (TGIU) der det burde vært undersøkt.
+- Trekk 5–10 hvis våtrom er over 20 år, og 5 hvis el-anlegget er over 30 år.
+- Laveste verdi er 5.
 
-| År | D |
+### Oppgraderings- og verdipotensial (`oppgradering`, 12)
+Kan kostnadseffektive forbedringer gjøre boligen bedre å bo i og lettere å selge? Se `boligscore.md`, avsnitt 6.
+
+| Situasjon | Grunnlag |
 |---|---|
-| ≤ 5 | 100 |
-| ≤ 8 | 75 |
-| ≤ 12 | 50 |
-| ≤ 20 | 25 |
-| Aldri | 10 |
+| Eldre kjøkken, overflater eller gulv som kan moderniseres kosmetisk, og prisen gjenspeiler dagens standard | 90–100 |
+| Uutnyttet areal (loft, bod) som kan tas i bruk uten store inngrep | 80 |
+| Innflyttingsklar, lite å hente | 50 |
+| Vedlikehold som bare bevarer verdien (rør, vinduer, ventilasjon, el, fasade) | 40 |
+| Totalrehabilitering av bad, rør eller el, fukt, eller inngrep i konstruksjon | 20–30 |
+| Nylig oppusset av selger og priset deretter | 20 |
 
-**Krav til teksten:**
-- Begrunnelsen skal nevne strøkets vekst mot Bergen, budmarkedet, solscore og hvor mange år kjøpet tar på å lønne seg i hvert av de tre scenariene.
-- Ikke skriv at kjøpet «lønner seg etter X år» uten å si hvilket scenario og hvilken prisvekst det gjelder.
+- Juster +10 hvis `krPerM2` er mer enn 10 % under `omrade.medianKrM2Leiligheter`, og −10 hvis den er mer enn 10 % over.
+- Sett `verdiokningOppussing` (kr) etter disse tommelfingerreglene, merket som anslag:
+  - overflater (maling, gulv): ca. 1–1,5 × kostnaden
+  - nytt kjøkken eller bad der det gamle er utdatert: ca. 0,5–1 × kostnaden
+  - verdibevarende tiltak: ca. 0
+- Ikke regn med at en oppussing gir like mye i verdi som den koster.
 
-### Totalscore
-`score = round(sum(delscore × vekt))` med de seks vektene fra `kriterier.md` (pris, tilstand, økonomi, beliggenhet, kriterier, investering).
-Trekk for myke må-krav, i totalscoren:
-- Reisetid: `3 × (lengste jobbreise − 30)` når den er over 30 min, maks 30.
-- Månedskostnad: `round(3 × (mndKostnad − maksMndKostnad) / 500)` når den er over grensen, maks 30.
+### Planløsning og areal (`planlosning`, 8)
+Start på 50.
 
-`score = round(sum(delscore × vekt)) − trekk`, minst 0. Er et **hardt** må-krav brutt, er maks totalscore 45 (etter trekket).
-Lagre trekket i `scoreTrekk` (`{"reisetid": 3, "mndKostnad": 0}`), og nevn det i begrunnelsen.
+| Forhold | Justering |
+|---|---|
+| BRA-i 45–75 m² / 40–45 eller 75–85 m² / over 85 m² / under 40 m² | +20 / +10 / +5 / −10 |
+| Soverom: 2 / 3 eller flere / 1 med kontor (eget rom ≥ ca. 5 m²) / 1 («god toroms») | +20 / +15 / +10 / +5 |
+| Boder og god oppbevaring | +5 |
+| Gode lysforhold eller lite innsyn | +5 |
+| Gjennomgangsrom, ulogisk planløsning eller mye bortkastet areal | −10 |
+
+Rom som brukes som soverom uten godkjenning, teller ikke som soverom.
+
+### Sameie/borettslag og fellesøkonomi (`fellesokonomi`, 6)
+- Start på 80.
+- Fellesgjeld per m² BRA-i: under 5 000 kr gir +10, 5 000–15 000 kr gir 0, over 15 000 kr gir −15.
+- Avdragsfrihet som slutter innen 3 år: −10.
+- Planlagte tiltak med varslet økning i felleskostnadene: −5 til −20.
+- Solid vedlikeholdsfond eller disponible midler: +5.
+- Regnskap, vedlikeholdsplan eller vedtekter som mangler: −5.
+- Selveier uten sameie av betydning: sett 75 og begrunn.
+- Felleskostnadene per m² vurderes ikke her, men i Løpende kostnader.
+
+### Egen trivsel og bokvalitet (`trivsel`, 5)
+Om boligen fungerer for dere i hverdagen gjennom eierperioden. Start på 50.
+
+| Forhold | Justering |
+|---|---|
+| Balkong, terrasse eller annen privat uteplass | +15 |
+| Innflyttingsklar, eller bare kosmetisk oppussing (`storreJobber` er tom) | +10 |
+| Heis i 3. etasje eller høyere / ingen heis i 4. etasje eller høyere | +5 / −5 |
+| Parkering eller trygg sykkelbod | +5 |
+| Lyst og luftig, eller lite innsyn | +5 |
+
+### Løpende kostnader (`lopende`, 5)
+- Grunnlag: `100 − 10 × (mndKostnad − 22 000) / 1 000`, mellom 0 og 100. Under 22 000 kr gir 100.
+- Felleskost. per m² BRA-i: under 45 kr gir +10, over 100 kr gir −10.
+- Energimerke A eller B (`grontLan`) gir +10. F eller G gir −10, fordi strøm og oppvarming koster mer.
+- Er `mndKostnad` over `maksMndKostnad` (28 000), legg et rødt flagg.
+
+### Røde flagg fra kriteriene deres
+Disse påvirker ikke scoren direkte, men skal stå først i `rodeFlagg` og nevnes i `oppsummering`:
+- totalpris over 4,9 mill ved prisantydning (med `budForBudsjett`)
+- reisetid over 30 min for Håkon eller Camilla
+- månedskostnad over 28 000 kr
+- mer enn én større jobb de neste 5 årene
+
+### Risikonivå (`risiko`)
+Separat fra scoren (`boligscore.md`, avsnitt 7). Sett `risiko: {"niva": "lav" | "middels" | "hoy", "grunner": [...]}`.
+- **Høy:**
+  - TG3 på våtrom, tak, drenering eller el som ikke ser ut til å være priset inn
+  - fukt eller lekkasje som ikke er utbedret
+  - mer enn én større jobb
+  - rom brukt som soverom uten godkjenning
+  - svak økonomi i laget
+  - stor rehabilitering med kraftig økning i felleskostnader eller fellesgjeld
+- **Middels:**
+  - TG3 som er priset inn
+  - TG2 på våtrom
+  - eldre rør
+  - el-anlegg uten dokumentasjon
+  - planlagt rehabilitering
+  - viktige dokumenter som mangler (full salgsoppgave, regnskap)
+- **Lav:** ingen vesentlige problemer, og dokumentasjonen er god.
+
+Ved høy risiko: skriv i `oppsummering` at det bør hentes mer dokumentasjon eller en fagkyndig vurdering før bud.
+
+### Tolkning (`tolkning`)
+| Score | Tolkning |
+|---|---|
+| 90–100 | Eksepsjonelt attraktivt |
+| 80–89 | Svært attraktivt |
+| 70–79 | Godt potensial |
+| 60–69 | Flere kompromisser |
+| 50–59 | Svakt objekt |
+| Under 50 | Lite attraktivt |
+
+Les alltid totalscore, risikonivå og resultat ved salg sammen. En bolig med 75 poeng og lav risiko kan være et bedre kjøp enn en med 85 poeng og høy risiko.
+
+### Resultat ved salg (`resultatVedSalg`, ikke en del av scoren)
+`beregn.py` regner ut resultatet ved salg etter 3 og 5 år i tre scenarier: pessimistisk (0 %), nøytralt (strøkets 5-årssnitt) og optimistisk.
+- `resultat` = salgspris − kjøpspris − omkostninger − oppussing − salgskostnad − eierkostnader (renter etter fradrag, felleskost., avgifter, vedlikehold).
+- `motLeie` legger til spart husleie og trekker fra avkastning på egenkapitalen.
+
+Ikke anbefal et kjøp som bare lønner seg hvis prisene stiger. Nevn det pessimistiske resultatet i `oppsummering` hvis det er sterkt negativt etter 5 år.
 
 ## Foreløpig modus
 Brukes når pris- eller økonomitallene mangler (typisk: PDF-en er bare vedlegg og Finn-annonsen er blokkert), og brukeren har sagt «fortsett».
 
-- Sett delscorer uten grunnlag til `null`. Typisk `pris` (uten totalpris) og `okonomi` (uten fellesgjeld/felleskost.).
+- Sett kategorier uten grunnlag til `null`. Typisk `kjopspris` (uten totalpris), `fellesokonomi` og `lopende` (uten fellesgjeld og felleskost.).
 - Gjett aldri tall for å kunne score.
-- **Foreløpig score** = vektet snitt av delscorene som finnes, med vektene skalert opp så de summerer til 1:
-  `score = round(sum(delscore × vekt) / sum(vekt))`, bare over delscorer som ikke er `null`.
-- Krever minst `tilstand` og én annen delscore. Ellers `score: null`.
+- **Foreløpig score** = poengene som finnes, skalert opp til 100:
+  `score = round(sum(poeng) / sum(vekt for kategoriene som finnes) × 100, 1)`.
+- Krever minst `teknisk` og én annen kategori. Ellers `score: null`.
 - Sett `forelopig: true` og `manglerTall` til feltnavnene som mangler (f.eks. `["prisantydning", "fellesgjeld", "fellesMnd", "omkostninger"]`).
 - Skriv i `oppsummering` at scoren er foreløpig og hva som mangler.
 - Når tallene kommer («Fullfør analysene»): regn ut alt på nytt, og sett `forelopig: false` og `manglerTall: []`.
