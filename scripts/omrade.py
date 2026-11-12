@@ -8,6 +8,7 @@ Ut:    JSON med
   sol:        solscore (0–100), timerJuni, timerDes, vurdering
   marked:     avvikProsent (typisk salg over/under prisantydning), andelOver, dagerPaaMarkedet
   kollektiv:  stopp, avgangerRushtid
+  nabolag:    dagligvare {navn, meter}, trening {navn, meter}, servering1km (antall kafeer og restauranter), url
   kilder:     liste med URL-er
 
 Kilder: eiendomssjekk.no (tinglyste salg fra Kartverkets grunnbok, Finn-annonser, solberegning)
@@ -82,6 +83,24 @@ def eiendom(gnr, bnr):
     return ut
 
 
+def meter(s):
+    s = s.strip()
+    return round(tall(s[:-2]) * 1000) if s.endswith("km") else round(tall(s[:-1]))
+
+
+def nabolag(gnr, bnr):
+    """Hverdagstjenester rundt eiendommen (Eiendomssjekk, avstander langs gangnettet fra OpenStreetMap)."""
+    url = f"{ES}/eiendom/4601-{gnr}-{bnr}/nabolag"
+    s = tekst(hent(url))
+    ut = {"url": url}
+    for typ, nokkel in (("dagligvare", "dagligvare"), ("treningssenter", "trening")):
+        m = re.search(r"\| ([^|]+) \| " + typ + r" \| [^|]+ \| ([\d ,]+ ?k?m) \|", s)
+        ut[nokkel] = {"navn": m.group(1).strip(), "meter": meter(m.group(2))} if m else None
+    m = re.search(r"Innen en kilometer i luftlinje fra eiendommen ligger (\d+) restauranter", s)
+    ut["servering1km"] = int(m.group(1)) if m else None
+    return ut
+
+
 def omrade(slug):
     url = f"{ES}/omraade/{slug}"
     h = hent(url)
@@ -141,6 +160,11 @@ def main(gnr, bnr):
         ut["sol"] = {k: e.get(k) for k in ("solscore", "timerJuni", "timerDes", "solvurdering")}
         ut["kollektiv"] = e.get("kollektiv")
         ut["kilder"].append(e["url"])
+        try:
+            ut["nabolag"] = nabolag(gnr, bnr)
+            ut["kilder"].append(ut["nabolag"]["url"])
+        except Exception as ex:
+            ut["nabolagFeil"] = str(ex)[:200]
         if e.get("omradeSlug"):
             o = omrade(e["omradeSlug"])
             ut["marked"] = o.pop("marked")

@@ -100,6 +100,10 @@ Sikkerhetskopi i repoet (`data/leiligheter/<finnkode>.json`) tas bare når bruke
   "marked": { "avvikProsent": 3.3, "andelOver": 65, "dagerPaaMarkedet": 9, "grunnlagSalg": 297 },
   "sol": { "solscore": 63, "timerJuni": 17.3, "timerDes": 4.8, "solvurdering": "Middels solforhold" },
   "kollektivFrekvens": { "stopp": "Buss, Eikeviken", "avstand": "1 min til fots (70 m)", "avgangerRushtid": 23 },
+  "nabolag": { "dagligvare": { "navn": "Spar Eikeviken", "meter": 110 }, "trening": { "navn": "SATS Sandviken", "meter": 2900 },
+               "servering1km": 6, "url": "https://eiendomssjekk.no/eiendom/4601-168-200/nabolag" },   // omrade.py → nabolag
+  "omgivelser": { "stoy": "Gul støysone på 20 % av tomten (PDF s. 11), nabolagsprofil 84/100", "natur": "Turområde 300 m (PDF s. 5)",
+                  "utsikt": "Utsikt mot Byfjorden (annonse)", "trafikk": null },   // fra annonse/salgsoppgave, null hvis ukjent
   "kilderOmrade": ["https://eiendomssjekk.no/…", "https://www.ssb.no/statbank/table/07221"],
   "prisvekst": { "pessimistisk": 0, "forventet": 5.2, "optimistisk": 7.8, "kilde": "Eiendomssjekk, tinglyste salg i Sandviken …" },
   "verdiokningOppussing": 10000,                 // anslått verdiløft fra oppussingEstimat (analyseregler.md)
@@ -121,6 +125,7 @@ Sikkerhetskopi i repoet (`data/leiligheter/<finnkode>.json`) tas bare når bruke
   // Vurdering
   "score": 72,                                   // foreløpig score hvis forelopig: true
   "delscorer": { "pris": 70, "tilstand": 66, "okonomi": 75, "beliggenhet": 80, "kriterier": 70, "investering": 52 },
+  "beliggenhetDeler": { "avstand": 78, "sol": 63, "omgivelser": 75 },   // analyseregler.md, «Beliggenhet»
   "scoreTrekk": { "reisetid": 3, "mndKostnad": 0 },  // trekk i totalscore for myke må-krav (analyseregler.md, «Totalscore»)
   "delscoreBegrunnelse": { "pris": "…", "tilstand": "…", "okonomi": "…", "beliggenhet": "…", "kriterier": "…", "investering": "…" },
   "oppsummering": "2–4 setninger med anbefaling.",

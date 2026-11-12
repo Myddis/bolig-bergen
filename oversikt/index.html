@@ -841,6 +841,17 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
         </div>` : ""}
         <div class="meta" style="color:var(--muted);font-size:12px">Sammenlignet med å fortsette å leie. Formue ved kjøp er etter restlån, fellesgjeld og salgskostnad. Prisvekst i strøket er årlig snitt fra tinglyste salg (Eiendomssjekk); Bergen fra SSB. ${esc(b.investering.antagelser || "")}</div>
       </section>` : ""}
+      ${b.beliggenhetDeler ? `<section class="blk"><h3>Beliggenhet</h3>
+        <div class="bars wide">${[["avstand", "Avstand til jobb"], ["sol", "Sol"], ["omgivelser", "Omgivelser"]].map(([k, t]) => { const v = b.beliggenhetDeler[k]; return `<div class="bar"><span>${t}</span><span class="track"><span class="fill" style="display:block;width:${v ?? 0}%;background:${scoreColor(v)}"></span></span><span class="num">${v ?? "–"}</span></div>`; }).join("")}</div>
+        <div class="kv">
+          ${b.nabolag && b.nabolag.dagligvare ? `<div><span>Nærmeste dagligvare</span><b>${esc(b.nabolag.dagligvare.navn)}, <span class="num">${esc(nf.format(b.nabolag.dagligvare.meter))} m</span></b></div>` : ""}
+          ${b.nabolag && b.nabolag.trening ? `<div><span>Nærmeste treningssenter</span><b>${esc(b.nabolag.trening.navn)}, <span class="num">${esc(nf.format(b.nabolag.trening.meter))} m</span></b></div>` : ""}
+          ${b.nabolag && b.nabolag.servering1km != null ? `<div><span>Kafeer og restauranter innen 1 km</span><b class="num">${esc(b.nabolag.servering1km)}</b></div>` : ""}
+          ${b.sol && b.sol.solscore != null ? `<div><span>Solscore (bakkenivå)</span><b class="num">${esc(b.sol.solscore)} av 100</b></div>` : ""}
+          ${b.omgivelser ? [["stoy", "Støy"], ["natur", "Natur og tur"], ["utsikt", "Utsikt"], ["trafikk", "Trafikk"]].filter(([k]) => b.omgivelser[k]).map(([k, t]) => `<div><span>${t}</span><b>${esc(b.omgivelser[k])}</b></div>`).join("") : ""}
+        </div>
+        <div class="meta" style="color:var(--muted);font-size:12px">Avstand, sol og omgivelser teller en tredjedel hver. Gangavstander og solscore fra Eiendomssjekk.</div>
+      </section>` : ""}
       ${maal().length ? `<section class="blk"><h3>Reisetid</h3>
         <div style="overflow-x:auto"><table class="commtab"><thead><tr><th></th><th class="r">Kollektiv</th><th class="r">Gange</th><th class="r">Sykkel</th></tr></thead><tbody>${commRows}</tbody></table></div>
         <div class="meta" style="color:var(--muted);font-size:12px">Oppmøte kl. 08:00 en tirsdag, dør til dør. ${S.steder.length ? esc(S.steder.map((x) => x.navn + " = " + (x.adresse || "")).join(", ")) + ". " : ""}Kilde: ${esc([...new Set(maal().map((a) => ((b.pendling || {})[a.id] || {}).kilde || "Entur"))].join(" og "))}. Sykkel: Entur.</div></section>` : ""}

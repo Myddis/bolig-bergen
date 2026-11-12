@@ -46,7 +46,6 @@ Hvert oppfylt ønske gir pluss i «Mine kriterier». Vekt: 1 = litt viktig, 3 = 
 | Ønske | Vekt |
 |---|---|
 | Uteplass: balkong eller terrasse | 3 |
-| Gode solforhold | 3 |
 | Kort vei til kollektiv: Bybanen under 700 m eller buss under 400 m å gå | 3 |
 | Lave felleskostnader (under 45 kr/m² BRA-i per mnd) | 3 |
 | Energimerke A eller B (gir grønt boliglån med lavere rente) | 2 |
@@ -55,6 +54,8 @@ Hvert oppfylt ønske gir pluss i «Mine kriterier». Vekt: 1 = litt viktig, 3 = 
 | Heis (hvis 3. etasje eller høyere) | 1 |
 | Selveier (andel gir ikke trekk, bare ikke pluss) | 1 |
 | Parkering eller trygg sykkelbod | 1 |
+
+Solforhold er ikke lenger et ønske her. Sol er en tredjedel av beliggenhetsscoren (se `analyseregler.md`).
 
 ## Områder
 Ikke et kriterium. Håkon legger bare inn boliger i strøk de kan tenke seg, så beliggenhet vurderes ut fra reisetid, sol, utsikt og støy.

@@ -77,12 +77,30 @@ Bruk bare som anslag, merket «anslag», og oppgi intervallet.
 - Hold resultatet mellom 10 og 100.
 
 ### Beliggenhet (`beliggenhet`)
-- Grunnlag: den **lengste** av de to reisetidene til jobb (Håkon og Camilla), der hver reisetid er det raskeste av kollektiv og gange. Reisetid til sentrum teller ikke.
-- Grunnlaget er glidende: `100 − 2 × (minutter − 15)`, mellom 30 og 100. Det gir 100 ved 15 min, 90 ved 20, 80 ved 25, 70 ved 30, 50 ved 40 og 30 ved 50 min eller mer.
+Tre like deler: `beliggenhet = round((avstand + sol + omgivelser) / 3)`. Lagre delene i `beliggenhetDeler: {avstand, sol, omgivelser}` og forklar hver av dem i begrunnelsen. Bydel og strøk gir ingen justering (se `kriterier.md`).
 
-- Ingen justering for område (se `kriterier.md`).
-- Solforhold: bruk `sol.solscore` fra `scripts/omrade.py`. ≥ 75 gir +10, ≤ 45 gir −10. Vurder også salgsoppgavens beskrivelse og retningen på uteplassen.
-- Støy fra trafikkert vei, Bybanen eller utesteder: −5.
+**Avstand.** Den **lengste** av de to reisetidene til jobb (Håkon og Camilla). Hver reisetid er det raskeste av kollektiv og gange. Reisetid til sentrum teller ikke.
+`avstand = 100 − 2 × (minutter − 15)`, mellom 30 og 100. Det gir 100 ved 15 min, 90 ved 20, 80 ved 25, 70 ved 30, 50 ved 40 og 30 ved 50 min eller mer.
+
+**Sol.** Utgangspunkt er `sol.solscore` (0–100) fra `scripts/omrade.py`. Solscoren er målt på bakkenivå ved eiendommens punkt, så juster den:
+- +10 hvis boligen ligger i 4. etasje eller høyere, eller hvis salgsoppgaven eller annonsen beskriver en solrik uteplass mot sør eller vest. Gi bare +10 én gang.
+- −10 hvis uteplassen eller stuen vender mot nord, eller er beskrevet som skyggefull.
+- Hold resultatet mellom 0 og 100. Mangler solscore, start på 50 og skriv det i `mangler`.
+
+**Omgivelser.** Start på 60, og juster med tabellen. Hold resultatet mellom 0 og 100.
+
+| Forhold | Justering |
+|---|---|
+| Dagligvare ≤ 400 m / > 1 km å gå (`nabolag.dagligvare.meter`) | +10 / −10 |
+| Treningssenter ≤ 800 m, eller minst 10 serveringssteder innen 1 km (`nabolag`) | +5 |
+| Park, sjø, vann eller turområde innen ca. 500 m | +10 |
+| Utsikt beskrevet i annonse eller salgsoppgave | +5 |
+| Boligen eller tomten i gul / rød støysone (støysonekart i salgsoppgaven) | −10 / −20 |
+| Nabolagsprofilen (Finn/Nabolag.no) sier mye støy, under ca. 60/100 | −5 |
+| Hovedvei, terminal, industri eller utesteder rett ved | −10 |
+
+- Ligger bare en liten del av tomten i støysone, og nabolagsprofilen sier lite støy (80/100 eller mer), gi halvt trekk.
+- Lagre det som er funnet i `omgivelser` (støy, natur, utsikt og trafikk, med kilde og PDF-side). Det som er ukjent, gir ingen justering. Skriv det i `mangler`.
 
 ### Mine kriterier (`kriterier`)
 - Start på 50.
@@ -90,7 +108,6 @@ Bruk bare som anslag, merket «anslag», og oppgi intervallet.
 - Et ønske som ikke er oppfylt gir 0, ikke trekk. Trekk bare for klare motsetninger til noe brukeren har skrevet at de ikke vil ha.
 - «Kort vei til kollektiv» er oppfylt når `bybane.meter` er under 700 eller `buss.meter` er under 400 (gangavstand fra `reisetid.py`).
 - «Energimerke A eller B» er oppfylt når `grontLan` er `true` (fra `beregn.py`).
-- «Gode solforhold» er oppfylt når `sol.solscore` er minst 65, eller når salgsoppgaven tydelig beskriver gode solforhold og uteplass mot sør eller vest.
 - Eieform: selveier gir pluss etter vekt. Andel og aksje gir verken pluss eller trekk.
 - **Må-krav** sjekkes mot `kriterier.md`:
   - totalpris (`budForBudsjett` fra `beregn.py`)

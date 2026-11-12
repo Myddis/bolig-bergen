@@ -126,6 +126,7 @@ Bruk gnr og bnr fra `geokod.py`. Lagre i dokumentet:
 - `marked`: typisk avvik mot prisantydning, andel solgt over og dager på markedet.
 - `sol`: solscore og soltimer.
 - `kollektivFrekvens`: avganger i rushtiden, hvis det finnes.
+- `nabolag`: nærmeste dagligvare og treningssenter (navn og gangavstand) og antall serveringssteder innen 1 km.
 - `kilderOmrade`: kildene.
 - `prisvekst`:
   - `pessimistisk`: 0.
@@ -141,6 +142,7 @@ Mangler områdetall (feil fra Eiendomssjekk), gjør ett WebSearch-søk etter pri
 3. Hent de andre boligene for sammenligning med `ArtifactData list` (samling `leiligheter`, `out_dir` i scratchpad). Bruk median kr/m² i samme bydel når det finnes minst tre andre.
 4. Fyll inn `soveromM2` (størrelse på hvert soverom), `kontor` (eget rom som kan brukes som kontor, se soverom-kravet i `kriterier.md`; `null` hvis det ikke finnes), `storreJobber` (større jobber de neste 5 årene) og `verdiokningOppussing` (anslått verdiløft fra oppussingen, se `analyseregler.md`). Kjør `beregn.py` på nytt etter at `verdiokningOppussing` er satt. Sjekk alle må-krav i `kriterier.md`.
    - `mndKostnadForventetPris` er månedskostnaden hvis boligen selges med typisk budavvik i strøket. Er den over grensen, legg det i `rodeFlagg`, selv om kravet er oppfylt ved prisantydning.
+   - Beliggenhet: sett `beliggenhetDeler` (avstand, sol, omgivelser) etter `analyseregler.md`. Les støysonekartet, nabolagsprofilen (støy), beskrivelsen av utsikt, natur og turområder, og retningen på uteplassen i salgsoppgaven. Lagre funnene i `omgivelser`.
 5. Sett de seks delscorene (pris, tilstand, okonomi, beliggenhet, kriterier, investering) og total score etter `analyseregler.md` og vektene i `kriterier.md`. Skriv en kort begrunnelse for hver delscore i `delscoreBegrunnelse`.
 6. Mangler pris- eller økonomitall: følg «Foreløpig modus» i `analyseregler.md` (`forelopig: true`, `manglerTall`).
 7. Skriv innholdet:
