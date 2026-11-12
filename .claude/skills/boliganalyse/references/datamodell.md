@@ -132,4 +132,18 @@ Sikkerhetskopi i repoet (`data/leiligheter/<finnkode>.json`) tas bare når bruke
 ```
 
 ## Andre dokumenter
+- `jobber/<jobbId>`: analysejobber lagt inn fra oversikten («Legg til leilighet»).
+  ```jsonc
+  {
+    "finnUrl": "https://www.finn.no/realestate/homes/ad.html?finnkode=480597898",
+    "finnkode": "480597898",
+    "filer": [{ "id": "<asset-id>", "navn": "annonse.png", "type": "image/png" },
+              { "id": "<asset-id>", "navn": "salgsoppgave.pdf", "type": "application/pdf" }],
+    "status": "venter",        // venter | analyserer | ferdig | feilet
+    "opprettet": "2026-11-12T10:00:00Z", "startet": null, "ferdig": null,
+    "melding": "",             // fremdrift, eller hva som gikk galt
+    "score": null, "forelopig": null
+  }
+  ```
+- Bolig-dokumentet får `vedlegg: [{id, navn, type}]` når det er analysert fra køen. Filene vises via `/_blob/<id>`.
 - `oppsett/arbeidssteder`: `{ "liste": [{ "id", "navn", "adresse", "lat", "lon" }] }`. Speiler `config.json`. Oversikten tegner arbeidsstedene og lager reisetidsfiltre fra dette dokumentet.

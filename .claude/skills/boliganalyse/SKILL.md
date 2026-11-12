@@ -1,6 +1,6 @@
 ---
 name: boliganalyse
-description: Analyserer en leilighet i Bergen fra Finn-lenke og salgsoppgave (PDF), regner ut nøkkeltall, reisetid til jobb og score, og lagrer resultatet i oversikten «Boligjakt Bergen». Bruk når brukeren sender en Finn-annonse, et skjermbilde av en annonse og/eller en salgsoppgave, skriver /boliganalyse, eller ber om å analysere, fullføre, oppdatere eller sammenligne boliger i oversikten.
+description: Analyserer en leilighet i Bergen fra Finn-lenke og salgsoppgave (PDF), regner ut nøkkeltall, reisetid til jobb og score, og lagrer resultatet i oversikten «Boligjakt Bergen». Bruk når brukeren sender en Finn-annonse, et skjermbilde av en annonse og/eller en salgsoppgave, skriver /boliganalyse, eller ber om å analysere, fullføre, oppdatere eller sammenligne boliger i oversikten, eller om å kjøre analysekøen.
 argument-hint: <finn-lenke> (+ full salgsoppgave som PDF; skjermbilde av annonsen hvis Claude ikke har tilgang til nettleseren din)
 ---
 
@@ -168,6 +168,21 @@ Kort i chatten, høyst ca. 15 linjer:
 - Røde flagg.
 - Lenke til oversikten.
 - Hva som var usikkert eller manglet, og hva brukeren kan sende for å fullføre.
+
+## Kjør analysekøen
+Brukes når oversikten har startet den planlagte oppgaven «Boligjakt: analysekø», eller når Håkon skriver «kjør analysekøen». Ingen følger med underveis: ikke still spørsmål. Velg det som er mest fornuftig, og skriv det i `mangler` eller i jobbens `melding`.
+
+1. **Hent ventende jobber:** `ArtifactData query` på `config.json` → `artifactUrl`, samling `jobber`, `where: [["status", "==", "venter"]]`. Er ingen igjen, avslutt med en kort melding.
+2. **For hver jobb**, eldste først:
+   1. **Merk jobben:** `ArtifactData update` med `if_version`: `status: "analyserer"`, `startet` satt til nåtid, `melding: "Leser vedlegg"`.
+   2. **Last ned vedleggene:** for hver fil i `filer` (`{id, navn, type}`): `Artifact` med `action: "read"`, `url` = artifactUrl og `path` = filens `id`. Resultatet sier hvor filen ble lagret lokalt. Bilder er skjermbilder av Finn-annonsen. PDF-er er salgsoppgave eller tilstandsrapport.
+   3. **Kjør arbeidsflyten over** (steg 1–8) med `finnUrl` fra jobben og de nedlastede filene.
+      - Mangler pris eller økonomi: bruk foreløpig modus i stedet for å spørre.
+      - Oppdater `melding` underveis på naturlige punkter («Leser salgsoppgaven», «Henter områdedata», «Lagrer»), med `if_version`.
+      - Legg `vedlegg: filer` (id, navn, type) i bolig-dokumentet, slik at oversikten kan lenke til filene.
+   4. **Ferdig:** oppdater jobben med `status: "ferdig"`, `ferdig` satt til nåtid, `finnkode`, `score`, `forelopig` og en kort `melding` (adresse, score og det viktigste røde flagget).
+   5. **Feil** (fil som ikke kan leses, adresse som ikke finnes eller lignende): `status: "feilet"`, med en `melding` som forklarer hva som gikk galt og hva Håkon kan gjøre. Gå videre til neste jobb.
+3. Ikke commit eller push noe.
 
 ## Andre forespørsler
 - **«Fullfør analysene»** (eller brukeren sender tall/skjermbilde for en bolig som finnes):

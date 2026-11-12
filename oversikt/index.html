@@ -239,6 +239,47 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
 .saved { font-size: 12px; color: var(--muted); min-height: 1em; }
 .cols2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 
+/* Legg til leilighet + jobber */
+.addbtn { white-space: nowrap; }
+.jobs { border-bottom: 1px solid var(--line); display: grid; }
+.jobs h3 { margin: 0; padding: 10px 16px 4px; font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 700; }
+.job { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; padding: 8px 16px 10px; align-items: center; }
+.job + .job { border-top: 1px dashed var(--line); }
+.job .jt { font-weight: 600; min-width: 0; overflow-wrap: anywhere; }
+.job .jm { grid-column: 1 / -1; color: var(--muted); font-size: 12px; overflow-wrap: anywhere; }
+.job .ja { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px 12px; }
+.pill.j-venter { background: var(--surface-2); border: 1px solid var(--line); color: var(--muted); }
+.pill.j-analyserer { background: color-mix(in srgb, var(--accent) 15%, transparent); color: var(--accent); }
+.pill.j-ferdig { background: color-mix(in srgb, var(--good) 15%, transparent); color: var(--good); }
+.pill.j-feilet { background: color-mix(in srgb, var(--bad) 15%, transparent); color: var(--bad); }
+.pulse { width: 7px; height: 7px; border-radius: 50%; background: currentColor; animation: pulse 1.2s ease-in-out infinite; }
+@keyframes pulse { 0%, 100% { opacity: .25 } 50% { opacity: 1 } }
+.fallback { margin: 8px 16px 12px; padding: 10px 12px; border: 1px dashed var(--line); border-radius: 8px; background: var(--surface-2); font-size: 13px; display: grid; gap: 6px; }
+.fallback code { font-family: var(--f-mono); font-size: 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 4px; padding: 2px 6px; user-select: all; }
+.modal-back { position: fixed; inset: 0; z-index: 60; background: rgb(10 20 26 / .45); display: grid; place-items: center;
+  padding-block: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-bottom, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.modal { width: min(540px, 100%); max-height: 100%; overflow-y: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+  box-shadow: var(--shadow); padding: 20px; display: grid; gap: 12px; }
+.modal h2 { margin: 0; font-family: var(--f-display); font-size: 22px; letter-spacing: -.02em; }
+.modal .lead { margin: 0; color: var(--muted); }
+.modal label.fl { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 700; }
+.modal input[type=url] { width: 100%; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; min-height: 38px; }
+.drops { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.drop { position: relative; border: 1.5px dashed var(--line); border-radius: 10px; padding: 14px 12px; display: grid; gap: 4px; text-align: center; cursor: pointer; background: var(--surface-2); }
+.drop:hover, .drop.over { border-color: var(--accent); }
+.drop.ok { border-style: solid; border-color: var(--good); }
+.drop b { font-size: 14px; }
+.drop span { font-size: 12px; color: var(--muted); }
+.drop input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
+.filelist { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font-size: 13px; }
+.filelist li { display: flex; gap: 8px; align-items: center; justify-content: space-between; background: var(--surface-2); border-radius: 6px; padding: 4px 8px; }
+.filelist li span { min-width: 0; overflow-wrap: anywhere; }
+.formmsg { min-height: 1.2em; font-size: 13px; }
+.formmsg.err { color: var(--bad); }
+.mrow { display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
+.vedlegg { display: flex; flex-wrap: wrap; gap: 8px; }
+
 @media (max-width: 860px) {
   .app { height: auto; min-height: 100%; }
   main.body { grid-template-columns: 1fr; }
@@ -251,6 +292,8 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
     padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
   .colorby span { display: none; }
   .cols2 { grid-template-columns: 1fr; }
+  .drops { grid-template-columns: 1fr; }
+  .addbtn .long { display: none; }
   .tip { display: none; }
   .legend { padding: 6px 8px; font-size: 11px; gap: 2px; }
   .legend .src, .legend .row.work-row { display: none; }
@@ -262,6 +305,7 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
   <header class="top">
     <div class="brand"><h1>Boligjakt Bergen</h1><span class="sub" id="summary">Laster …</span></div>
     <div class="spacer"></div>
+    <button type="button" class="btn primary addbtn" id="addbtn" aria-label="Legg til leilighet" hidden>+ <span class="long">Legg til leilighet</span><span class="short" aria-hidden="true"></span></button>
     <label class="colorby" for="colorby"><span>Farg prikker etter</span>
       <select id="colorby">
         <option value="score">Score</option>
@@ -327,11 +371,29 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
       </div>
       <div class="scroll" id="sidescroll">
         <div class="note" id="dbnote" hidden></div>
+        <div class="jobs" id="jobs" hidden></div>
         <div class="list" id="list"></div>
       </div>
     </aside>
   </main>
   <div class="detailwrap" id="detailwrap" hidden></div>
+  <div class="modal-back" id="addmodal" hidden>
+    <form class="modal" id="addform" novalidate aria-labelledby="addtitle">
+      <h2 id="addtitle">Legg til leilighet</h2>
+      <p class="lead">Claude leser annonsen og salgsoppgaven og legger boligen på kartet. Det tar vanligvis 5–10 minutter, og du kan lukke siden mens den jobber.</p>
+      <label class="fl" for="finnurl">Finn-lenke</label>
+      <input type="url" id="finnurl" inputmode="url" autocomplete="off" placeholder="https://www.finn.no/realestate/homes/ad.html?finnkode=…">
+      <div class="drops">
+        <div class="drop" id="dropimg"><b>Skjermbilde</b><span>av Finn-annonsen med pris, fellesgjeld og felleskost.</span><span class="dz">Slipp bilde her eller trykk</span>
+          <input type="file" id="fileimg" accept="image/png,image/jpeg,image/webp" multiple aria-label="Velg skjermbilde av annonsen"></div>
+        <div class="drop" id="droppdf"><b>Salgsoppgave (PDF)</b><span>full salgsoppgave, eller tilstandsrapport</span><span class="dz">Slipp PDF her eller trykk</span>
+          <input type="file" id="filepdf" accept="application/pdf" multiple aria-label="Velg salgsoppgave som PDF"></div>
+      </div>
+      <ul class="filelist" id="filelist"></ul>
+      <div class="formmsg" id="formmsg" role="status" aria-live="polite"></div>
+      <div class="mrow"><button type="button" class="btn" id="addcancel">Avbryt</button><button type="submit" class="btn primary" id="addsubmit">Kjør analyse</button></div>
+    </form>
+  </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
@@ -791,6 +853,7 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
         ${(bl.planlagteTiltak || []).length ? `<div><b>Planlagte tiltak</b>${list(bl.planlagteTiltak)}</div>` : ""}
       </section>` : ""}
       <section class="blk"><h3>Spørsmål til megler</h3>${list(b.sporsmal)}</section>
+      ${(b.vedlegg || []).length ? `<section class="blk"><h3>Vedlegg</h3><div class="vedlegg">${b.vedlegg.map((f) => `<a class="btn" href="/_blob/${encodeURIComponent(f.id)}" target="_blank" rel="noopener">${esc(f.navn || (String(f.type).includes("pdf") ? "PDF" : "Bilde"))} ↗</a>`).join("")}</div></section>` : ""}
       ${(b.visninger || []).length ? `<section class="blk"><h3>Visninger</h3>${list(b.visninger.map((v) => typeof v === "string" ? v : [v.dato, v.tid].filter(Boolean).join(" ")))}</section>` : ""}
       <section class="blk"><h3>Mitt notat</h3>
         <textarea id="dnotat" data-notat placeholder="Inntrykk fra visning, spørsmål, budstrategi …">${esc(b.notat || "")}</textarea>
@@ -885,6 +948,177 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
     $("summary").textContent = !S.loaded ? "Laster …" : all.length ? `${all.length} bolig${all.length === 1 ? "" : "er"} registrert${ny ? ` · ${ny} nye siste 7 dager` : ""}` : "Ingen boliger registrert ennå";
   }
 
+
+  // ---------- legg til leilighet ----------
+  const TRIGGER = "trig_01QjRBMRC7ikM1V4NKuUYco8";
+  const CCR = "Claude Code Remote";
+  const JOBBSTATUS = { venter: "Venter", analyserer: "Analyserer", ferdig: "Ferdig", feilet: "Feilet" };
+  S.jobber = new Map();
+  S.assets = null; S.mcp = null; S.kanStarte = null; S.fallback = false;
+  const ny = { img: [], pdf: [] };
+
+  const finnkodeFra = (url) => {
+    try {
+      const u = new URL(url.trim());
+      if (!/(^|\.)finn\.no$/.test(u.hostname)) return null;
+      const q = u.searchParams.get("finnkode");
+      if (q && /^\d{6,12}$/.test(q)) return q;
+      const m = u.pathname.match(/(\d{8,12})(?!.*\d)/);
+      return m ? m[1] : null;
+    } catch { return null; }
+  };
+  const tidSiden = (iso) => {
+    if (!iso) return "";
+    const s = (Date.now() - Date.parse(iso)) / 1000;
+    if (s < 60) return "nå nettopp";
+    if (s < 3600) return `${Math.round(s / 60)} min siden`;
+    if (s < 86400) return `${Math.round(s / 3600)} t siden`;
+    return new Date(iso).toLocaleDateString("nb-NO", { day: "numeric", month: "short" });
+  };
+
+  function renderFiler() {
+    const ul = $("filelist");
+    const alle = [...ny.img.map((f, i) => ["img", i, f]), ...ny.pdf.map((f, i) => ["pdf", i, f])];
+    ul.innerHTML = alle.map(([k, i, f]) => `<li><span>${k === "img" ? "Bilde" : "PDF"} · ${esc(f.name)} <span class="num" style="color:var(--muted)">${(f.size / 1048576).toFixed(1).replace(".", ",")} MB</span></span><button type="button" class="linkbtn" data-fjern="${k}:${i}" aria-label="Fjern ${esc(f.name)}">Fjern</button></li>`).join("");
+    $("dropimg").classList.toggle("ok", ny.img.length > 0);
+    $("droppdf").classList.toggle("ok", ny.pdf.length > 0);
+  }
+  function leggTilFiler(files, hint) {
+    const msg = $("formmsg"); msg.className = "formmsg"; msg.textContent = "";
+    for (const f of files) {
+      const erPdf = f.type === "application/pdf" || /\.pdf$/i.test(f.name);
+      const erBilde = /^image\/(png|jpeg|webp)$/.test(f.type) || /\.(png|jpe?g|webp)$/i.test(f.name);
+      if (f.size > 20 * 1048576) { msg.className = "formmsg err"; msg.textContent = `${f.name} er større enn 20 MB.`; continue; }
+      if (erPdf && hint !== "img") ny.pdf.push(f);
+      else if (erBilde && hint !== "pdf") ny.img.push(f);
+      else { msg.className = "formmsg err"; msg.textContent = `${f.name}: bruk PNG, JPG eller WebP for skjermbilder og PDF for salgsoppgaven.`; }
+    }
+    renderFiler();
+  }
+  for (const [id, hint] of [["dropimg", "img"], ["droppdf", "pdf"]]) {
+    const z = $(id);
+    z.addEventListener("dragover", (e) => { e.preventDefault(); z.classList.add("over"); });
+    z.addEventListener("dragleave", () => z.classList.remove("over"));
+    z.addEventListener("drop", (e) => { e.preventDefault(); z.classList.remove("over"); leggTilFiler([...e.dataTransfer.files], hint); });
+  }
+  $("fileimg").addEventListener("change", (e) => { leggTilFiler([...e.target.files], "img"); e.target.value = ""; });
+  $("filepdf").addEventListener("change", (e) => { leggTilFiler([...e.target.files], "pdf"); e.target.value = ""; });
+  $("filelist").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-fjern]"); if (!b) return;
+    const [k, i] = b.dataset.fjern.split(":"); ny[k].splice(+i, 1); renderFiler();
+  });
+  function apneModal() { $("addmodal").hidden = false; $("formmsg").textContent = ""; setTimeout(() => $("finnurl").focus(), 30); }
+  function lukkModal() { $("addmodal").hidden = true; }
+  $("addbtn").onclick = apneModal;
+  $("addcancel").onclick = lukkModal;
+  $("addmodal").addEventListener("click", (e) => { if (e.target.id === "addmodal") lukkModal(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("addmodal").hidden) lukkModal(); });
+
+  $("addform").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const msg = $("formmsg"), knapp = $("addsubmit");
+    const url = $("finnurl").value.trim(), finnkode = finnkodeFra(url);
+    const feil = (t) => { msg.className = "formmsg err"; msg.textContent = t; };
+    if (!finnkode) return feil("Lim inn en lenke til en Finn-annonse (den skal inneholde finnkode).");
+    if (!ny.img.length) return feil("Legg ved et skjermbilde av Finn-annonsen. Claude får ikke lest Finn selv.");
+    if (!ny.pdf.length) return feil("Legg ved salgsoppgaven eller tilstandsrapporten som PDF.");
+    if (!S.assets || !S.db) return feil("Opplasting er ikke tilgjengelig i denne visningen.");
+    knapp.disabled = true; msg.className = "formmsg";
+    const filer = [], alle = [...ny.img, ...ny.pdf];
+    try {
+      for (let i = 0; i < alle.length; i++) {
+        const f = alle[i];
+        msg.textContent = `Laster opp ${i + 1} av ${alle.length}: ${f.name} …`;
+        const type = f.type || (/\.pdf$/i.test(f.name) ? "application/pdf" : /\.png$/i.test(f.name) ? "image/png" : /\.webp$/i.test(f.name) ? "image/webp" : "image/jpeg");
+        const r = await S.assets.upload(f, { type });
+        filer.push({ id: r.id, navn: f.name, type: r.contentType || type });
+      }
+    } catch (err) {
+      knapp.disabled = false;
+      const c = err && err.code;
+      return feil(c === "too_large" ? "En av filene er for stor (maks 20 MB)." : c === "unsupported_type" ? "En av filene har et format som ikke støttes." : c === "quota_or_state" ? "Lagringsplassen til oversikten er full." : "Opplastingen feilet. Prøv igjen.");
+    }
+    const jobbId = "j" + Date.now().toString(36);
+    msg.textContent = "Legger jobben i køen …";
+    try {
+      await S.db.collection("jobber").doc(jobbId).set({ finnUrl: url, finnkode, filer, status: "venter", opprettet: new Date().toISOString(), startet: null, ferdig: null, melding: "", score: null, forelopig: null });
+    } catch (err) {
+      knapp.disabled = false;
+      return feil(err && err.code === "invalid_argument" ? "Du har ikke tilgang til å legge til boliger i denne oversikten." : "Kunne ikke lagre jobben. Prøv igjen.");
+    }
+    msg.textContent = "Starter Claude …";
+    await startAnalyse(jobbId);
+    knapp.disabled = false;
+    ny.img = []; ny.pdf = []; renderFiler(); $("finnurl").value = "";
+    lukkModal();
+  });
+
+  async function startAnalyse(jobbId) {
+    const settMelding = async (t) => { try { await S.db.collection("jobber").doc(jobbId).update({ melding: t }); } catch {} };
+    if (!S.mcp) { S.fallback = true; renderJobs(); return false; }
+    try {
+      await S.mcp.callTool(CCR, "fire_trigger", { trigger_id: TRIGGER, text: `Jobb: ${jobbId}` });
+      S.fallback = false;
+      await settMelding("Claude starter. Det kan ta et minutt før analysen begynner.");
+      return true;
+    } catch (err) {
+      const c = err && err.code;
+      S.fallback = true;
+      const t = c === "approval_required" ? "Oversikten fikk ikke lov til å starte Claude. Trykk «Start analyse» og godkjenn."
+        : c === "needs_reauth" ? "Tilkoblingen til Claude Code må kobles til på nytt under Innstillinger → Tilkoblinger på claude.ai."
+        : (c === "server_not_connected" || c === "not_in_manifest" || c === "blocked_by_policy") ? "Oversikten kan ikke starte Claude for deg. Bruk kommandoen under i en Claude Code-økt."
+        : c === "tool_error" ? `Claude kunne ikke startes: ${(err.message || "").slice(0, 160)}`
+        : "Fikk ikke svar fra Claude. Jobben ligger i køen; trykk «Start analyse» for å prøve igjen.";
+      await settMelding(t);
+      renderJobs();
+      return false;
+    }
+  }
+
+  function renderJobs() {
+    const box = $("jobs");
+    const naa = Date.now();
+    const jobber = [...S.jobber.values()]
+      .filter((j) => j.status !== "ferdig" || naa - Date.parse(j.ferdig || j.opprettet) < 2 * 864e5)
+      .sort((a, b) => String(b.opprettet).localeCompare(String(a.opprettet))).slice(0, 8);
+    if (!jobber.length && !S.fallback) { box.hidden = true; box.innerHTML = ""; return; }
+    box.hidden = false;
+    const rad = (j) => {
+      const b = S.boliger.get(j.finnkode);
+      const tittel = b ? (b.adresse || b.tittel) : `Finn ${j.finnkode}`;
+      const hengt = j.status === "analyserer" && j.startet && naa - Date.parse(j.startet) > 40 * 60000;
+      const pill = `<span class="pill j-${esc(j.status)}">${j.status === "analyserer" ? '<span class="pulse" aria-hidden="true"></span>' : ""}${esc(JOBBSTATUS[j.status] || j.status)}</span>`;
+      const knapper = [];
+      if (j.status === "ferdig" && b) knapper.push(`<button type="button" class="linkbtn" data-vis="${esc(j.finnkode)}">Vis boligen</button>`);
+      if (j.status === "venter") knapper.push(`<button type="button" class="linkbtn" data-start="${esc(j.id)}">Start analyse</button>`);
+      if (j.status === "feilet" || hengt) knapper.push(`<button type="button" class="linkbtn" data-igjen="${esc(j.id)}">Prøv igjen</button>`);
+      if (j.status !== "analyserer" || hengt) knapper.push(`<button type="button" class="linkbtn" data-fjernjobb="${esc(j.id)}" style="color:var(--muted)">Fjern</button>`);
+      const m = hengt ? "Ingen fremdrift på over 40 minutter. Analysen kan ha stoppet." : j.melding || (j.status === "venter" ? "Venter på at Claude starter." : "");
+      return `<div class="job"><span class="jt">${esc(tittel)}${j.status === "ferdig" && j.score != null ? ` · <span class="num">${j.forelopig ? "~" : ""}${esc(j.score)}</span>` : ""}</span>${pill}
+        <span class="jm">${esc(m)}${m ? " · " : ""}${esc(tidSiden(j.ferdig || j.startet || j.opprettet))}</span>
+        ${knapper.length ? `<span class="ja">${knapper.join("")}</span>` : ""}</div>`;
+    };
+    box.innerHTML = `<h3>Analyser</h3>${jobber.map(rad).join("")}${S.fallback && jobber.some((j) => j.status === "venter") ? `<div class="fallback"><span>Oversikten fikk ikke startet Claude automatisk. Åpne en Claude Code-økt med repoet <b>bolig-bergen</b> og skriv:</span><span><code id="kocmd">kjør analysekøen</code> <button type="button" class="linkbtn" id="kopier">Kopier</button></span></div>` : ""}`;
+  }
+  $("jobs").addEventListener("click", async (e) => {
+    const t = e.target.closest("button"); if (!t) return;
+    if (t.id === "kopier") { try { await navigator.clipboard.writeText("kjør analysekøen"); t.textContent = "Kopiert"; } catch { const r = document.createRange(); r.selectNodeContents($("kocmd")); const s2 = getSelection(); s2.removeAllRanges(); s2.addRange(r); } return; }
+    if (t.dataset.vis) { select(t.dataset.vis, true); return; }
+    const ref = (id) => S.db.collection("jobber").doc(id);
+    t.disabled = true;
+    try {
+      if (t.dataset.start) await startAnalyse(t.dataset.start);
+      if (t.dataset.igjen) { await ref(t.dataset.igjen).update({ status: "venter", melding: "Lagt i køen på nytt.", startet: null }); await startAnalyse(t.dataset.igjen); }
+      if (t.dataset.fjernjobb) await ref(t.dataset.fjernjobb).delete();
+    } catch { t.disabled = false; }
+  });
+
+  async function initLeggTil() {
+    try { S.assets = await window.claude?.use?.("assets"); } catch { S.assets = null; }
+    try { S.mcp = await window.claude?.use?.("mcp"); } catch { S.mcp = null; }
+    $("addbtn").hidden = !(S.assets && S.db);
+  }
+
   // ---------- database ----------
   async function initDb() {
     const note = $("dbnote");
@@ -906,6 +1140,11 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
       buildCommuteUI();
       renderAll();
     }, () => {});
+    db.collection("jobber").onSnapshot((snap) => {
+      S.jobber = new Map(snap.docs.map((d) => [d.id, Object.assign({ id: d.id }, d.data())]));
+      renderJobs();
+    }, () => {});
+    initLeggTil();
     let first = true;
     db.collection("leiligheter").onSnapshot((snap) => {
       S.boliger = new Map(snap.docs.map((d) => [d.id, Object.assign({ id: d.id }, d.data())]));
@@ -914,6 +1153,7 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
       if (S.sel && !S.boliger.has(S.sel)) S.sel = null;
       renderAll();
       if (first && S.boliger.size) { first = false; fitTo(visible(), false); }
+      renderJobs();
     }, (e) => {
       done(); S.loaded = true; note.hidden = false;
       note.textContent = e && e.code === "revoked" ? "Tilgangen til boligdataene er endret." : "Mistet kontakten med databasen. Last inn siden på nytt for å prøve igjen.";
