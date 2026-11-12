@@ -874,9 +874,10 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
           ${b.nabolag && b.nabolag.trening ? `<div><span>Nærmeste treningssenter</span><b>${esc(b.nabolag.trening.navn)}, <span class="num">${esc(nf.format(b.nabolag.trening.meter))} m</span></b></div>` : ""}
           ${b.nabolag && b.nabolag.servering1km != null ? `<div><span>Kafeer og restauranter innen 1 km</span><b class="num">${esc(b.nabolag.servering1km)}</b></div>` : ""}
           ${b.sol && b.sol.solscore != null ? `<div><span>Solscore (bakkenivå)</span><b class="num">${esc(b.sol.solscore)} av 100</b>${b.sol.malepunkt && b.sol.malepunkt.toLowerCase() !== String(b.adresse || "").toLowerCase() ? `<span style="color:var(--muted);font-size:12px">målt ved ${esc(b.sol.malepunkt)}</span>` : ""}</div>` : ""}
+          ${b.sol && b.sol.ettermiddagAndel != null ? `<div><span>Ettermiddagssol (kl. 15–solnedgang)</span><b class="num">${esc(b.sol.ettermiddagAndel)} %</b><span style="color:var(--muted);font-size:12px">morgen ${esc(b.sol.morgenAndel)} %${b.sol.sisteSolJevndogn ? `, sol til kl. ${esc(b.sol.sisteSolJevndogn)} ved jevndøgn` : ""}</span></div>` : ""}
           ${b.omgivelser ? [["stoy", "Støy"], ["natur", "Natur og tur"], ["utsikt", "Utsikt"], ["trafikk", "Trafikk"]].filter(([k]) => b.omgivelser[k]).map(([k, t]) => `<div><span>${t}</span><b>${esc(b.omgivelser[k])}</b></div>`).join("") : ""}
         </div>
-        <div class="meta" style="color:var(--muted);font-size:12px">Tilgjengelighet (½ jobbreise, ¼ sentrum, ¼ kollektiv), sol og omgivelser teller en tredjedel hver av Beliggenhet. Gangavstander og solscore fra Eiendomssjekk.</div>
+        <div class="meta" style="color:var(--muted);font-size:12px">Tilgjengelighet (½ jobbreise, ¼ sentrum, ¼ kollektiv), sol og omgivelser teller en tredjedel hver av Beliggenhet. I sol teller ettermiddagssol 60 % og solscore 40 %. Ettermiddagssol er regnet fra terrenget (åser og fjell), solscore fra bygg og trær. Gangavstander og soldata fra Eiendomssjekk.</div>
       </section>` : ""}
       ${maal().length ? `<section class="blk"><h3>Reisetid</h3>
         <div style="overflow-x:auto"><table class="commtab"><thead><tr><th></th><th class="r">Kollektiv</th><th class="r">Gange</th><th class="r">Sykkel</th></tr></thead><tbody>${commRows}</tbody></table></div>

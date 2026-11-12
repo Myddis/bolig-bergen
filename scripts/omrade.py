@@ -9,6 +9,8 @@ Ut:    JSON med
   marked:     avvikProsent (typisk salg over/under prisantydning), andelOver, dagerPaaMarkedet
   kollektiv:  stopp, avgangerRushtid
   nabolag:    dagligvare {navn, meter}, trening {navn, meter}, servering1km (antall kafeer og restauranter), url
+  solretning: ettermiddagAndel / morgenAndel (% av sola som ikke stenges av terrenget, kl. 15–solnedgang / soloppgang–12,
+              snitt 15. mars–15. oktober), ettermiddagTimer (t/dag), sisteSolJevndogn, lokalSkygge (tekst fra Eiendomssjekk)
   kilder:     liste med URL-er
 
 Kilder: eiendomssjekk.no (tinglyste salg fra Kartverkets grunnbok, Finn-annonser, solberegning)
@@ -19,11 +21,14 @@ Vekst beregnes robust: snitt av de fire siste kvartalene mot snitt av fire kvart
 ikke styrer resultatet.
 """
 
+import datetime as dt
 import html
 import json
+import math
 import re
 import sys
 import urllib.request
+from zoneinfo import ZoneInfo
 
 ES = "https://eiendomssjekk.no"
 UA = {"User-Agent": "bolig-bergen/1.0 (privat boligsok)"}
@@ -108,6 +113,65 @@ def nabolag(gnr, bnr):
     return ut
 
 
+TZ = ZoneInfo("Europe/Oslo")
+
+
+def solposisjon(lat, lon, t):
+    """Solas asimut og høyde (grader) for et tidspunkt med tidssone (NOAA, forenklet; nøyaktig til noen minutter)."""
+    u = t.astimezone(dt.timezone.utc)
+    h = u.hour + u.minute / 60
+    g = 2 * math.pi / 365 * (u.timetuple().tm_yday - 1 + (h - 12) / 24)
+    eqt = 229.18 * (0.000075 + 0.001868 * math.cos(g) - 0.032077 * math.sin(g) - 0.014615 * math.cos(2 * g) - 0.040849 * math.sin(2 * g))
+    dekl = (0.006918 - 0.399912 * math.cos(g) + 0.070257 * math.sin(g) - 0.006758 * math.cos(2 * g) + 0.000907 * math.sin(2 * g)
+            - 0.002697 * math.cos(3 * g) + 0.00148 * math.sin(3 * g))
+    ha = math.radians((h * 60 + eqt + 4 * lon) / 4 - 180)
+    la = math.radians(lat)
+    z = math.acos(max(-1, min(1, math.sin(la) * math.sin(dekl) + math.cos(la) * math.cos(dekl) * math.cos(ha))))
+    az = math.degrees(math.atan2(math.sin(ha), math.cos(ha) * math.sin(la) - math.tan(dekl) * math.cos(la))) + 180
+    return az % 360, 90 - math.degrees(z)
+
+
+def horisont_hoyde(profil, az):
+    pts = sorted({(a % 360, e) for a, e in profil})
+    for i, (a0, e0) in enumerate(pts):
+        a1, e1 = pts[(i + 1) % len(pts)]
+        if a1 <= a0:
+            a1 += 360
+        aa = az if az >= a0 else az + 360
+        if a0 <= aa <= a1:
+            return e0 + (e1 - e0) * (aa - a0) / (a1 - a0) if a1 > a0 else e0
+    return 0
+
+
+def solretning(gnr, bnr):
+    """Morgen- mot ettermiddagssol fra terrenghorisonten (Eiendomssjekk/PVGIS). Bygg og trær er ikke med,
+    men Eiendomssjekk beskriver lokal skygge ved målepunktet i `lokalSkygge`."""
+    url = f"{ES}/solforhold/4601-{gnr}-{bnr}"
+    h = hent(url)
+    d = json.loads(re.search(r'id="solbane-data">(.*?)</script>', h, re.S).group(1))
+    s = tekst(h)
+    sum_ = {"morgen": [0, 0], "ettermiddag": [0, 0]}
+    for mnd in range(3, 11):
+        for minutt in range(0, 24 * 60, 5):
+            az, el = solposisjon(d["lat"], d["lon"], dt.datetime(2026, mnd, 15, minutt // 60, minutt % 60, tzinfo=TZ))
+            if el <= 0:
+                continue
+            del_ = "morgen" if minutt < 12 * 60 else "ettermiddag" if minutt >= 15 * 60 else None
+            if del_:
+                sum_[del_][1] += 1
+                sum_[del_][0] += el > horisont_hoyde(d["horisont"], az)
+    jevn = next((x["oppNed"] for x in d.get("sesonger", []) if x.get("navn") == "Vårjevndøgn"), "")
+    m = re.search(r"siste sol (\d\d:\d\d)", jevn)
+    return {
+        "ettermiddagAndel": round(100 * sum_["ettermiddag"][0] / sum_["ettermiddag"][1]),
+        "morgenAndel": round(100 * sum_["morgen"][0] / sum_["morgen"][1]),
+        "ettermiddagTimer": round(sum_["ettermiddag"][0] * 5 / 60 / 8, 1),  # snitt t/dag etter kl. 15 (ett døgn per måned, 8 mnd)
+        "sisteSolJevndogn": m.group(1) if m else None,
+        "lokalSkygge": re.findall(r"(?:Trærne|Treet|Bygget|Bygningen|Byggene|Huset|Husene)[^.|]*tar (?:ettermiddagssola|morgensola|kveldssola|sola)[^.|]*\.", s),
+        "url": url,
+    }
+
+
 def omrade(slug):
     url = f"{ES}/omraade/{slug}"
     h = hent(url)
@@ -167,6 +231,10 @@ def main(gnr, bnr):
         ut["sol"] = {k: e.get(k) for k in ("solscore", "timerJuni", "timerDes", "solvurdering", "malepunkt", "adresserPaaEiendom", "tomtM2")}
         ut["kollektiv"] = e.get("kollektiv")
         ut["kilder"].append(e["url"])
+        try:
+            ut["sol"].update(solretning(gnr, bnr))
+        except Exception as ex:
+            ut["solretningFeil"] = str(ex)[:200]
         try:
             ut["nabolag"] = nabolag(gnr, bnr)
             ut["kilder"].append(ut["nabolag"]["url"])

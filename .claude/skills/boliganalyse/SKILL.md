@@ -125,7 +125,7 @@ python3 scripts/omrade.py <gnr> <bnr>
 Bruk gnr og bnr fra `geokod.py`. Lagre i dokumentet:
 - `omrade`: `navn`, `url`, `medianKrM2`, `medianKrM2Leiligheter`, `salg12mnd`, `vekst5aar` og `vekst12mnd`, pluss `bergenVekst5aar` og `bergenVekst12mnd` fra `bergen`.
 - `marked`: typisk avvik mot prisantydning, andel solgt over og dager på markedet.
-- `sol`: solscore og soltimer.
+- `sol`: solscore, soltimer, målepunkt og solretning (morgen- og ettermiddagsandel, siste sol ved jevndøgn, lokal skygge).
 - `kollektivFrekvens`: avganger i rushtiden, hvis det finnes.
 - `nabolag`: nærmeste dagligvare og treningssenter (navn og gangavstand) og antall serveringssteder innen 1 km.
 - `kilderOmrade`: kildene.

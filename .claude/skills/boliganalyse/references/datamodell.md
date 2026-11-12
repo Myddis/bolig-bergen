@@ -99,7 +99,9 @@ Sikkerhetskopi i repoet (`data/leiligheter/<finnkode>.json`) tas bare når bruke
               "bergenVekst5aar": 7.1, "bergenVekst12mnd": 10.5 },
   "marked": { "avvikProsent": 3.3, "andelOver": 65, "dagerPaaMarkedet": 9, "grunnlagSalg": 297 },
   "sol": { "solscore": 63, "timerJuni": 17.3, "timerDes": 4.8, "solvurdering": "Middels solforhold",
-           "malepunkt": "Helleveien 133", "adresserPaaEiendom": 3, "tomtM2": 1512 },   // målepunkt for solscoren (Eiendomssjekk)
+           "malepunkt": "Helleveien 133", "adresserPaaEiendom": 3, "tomtM2": 1512,   // målepunkt for solscoren (Eiendomssjekk)
+           "ettermiddagAndel": 97, "morgenAndel": 77, "ettermiddagTimer": 5.7, "sisteSolJevndogn": "18:41",   // omrade.py → solretning (terreng)
+           "lokalSkygge": [], "url": "https://eiendomssjekk.no/solforhold/4601-168-200" },
   "kollektivFrekvens": { "stopp": "Buss, Eikeviken", "avstand": "1 min til fots (70 m)", "avgangerRushtid": 23 },
   "nabolag": { "dagligvare": { "navn": "Spar Eikeviken", "meter": 110 }, "trening": { "navn": "SATS Sandviken", "meter": 2900 },
                "servering1km": 6, "url": "https://eiendomssjekk.no/eiendom/4601-168-200/nabolag" },   // omrade.py → nabolag

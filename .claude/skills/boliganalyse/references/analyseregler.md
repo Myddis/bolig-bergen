@@ -82,13 +82,16 @@ Tre like deler: `grunnlag = (tilgjengelighet + sol + omgivelser) / 3`. Lagre del
 - **Sentrum:** reisetid til sentrum (`pendling.sentrum`). `100 − 3 × (minutter − 10)`, mellom 30 og 100.
 - **Kollektiv:** 100 hvis Bybanen er under 700 m eller buss under 400 m å gå. 30 hvis begge er over 1 km. Ellers 60.
 
-**Sol.** Utgangspunkt er `sol.solscore` (0–100) fra Eiendomssjekk (`scripts/omrade.py`). Den er målt på bakkenivå i ett målepunkt for hele eiendommen (`sol.malepunkt`).
-- **Usikker solscore:** ligger målepunktet ved en annen adresse enn boligen, og tomten er stor (over ca. 5 000 m² eller minst 5 adresser, typisk flere blokker), sier solscoren lite om akkurat denne boligen. Start da på 60 i stedet for solscoren, og bruk justeringene under. Skriv i begrunnelsen at solscoren er målt ved en annen bygning. Er målepunktet en naboadresse i samme bygg eller på en liten tomt, bruk solscoren som vanlig.
+**Sol.** Ettermiddagssol teller mest, fordi Håkon og Camilla er hjemme etter jobb. `sol = round(0,4 × S + 0,6 × E)`, mellom 0 og 100. Begge delene kommer fra Eiendomssjekk (`scripts/omrade.py`, feltet `sol`).
 
-Juster:
-- +10 for 4. etasje eller høyere, eller for en solrik uteplass mot sør eller vest. Gi bare +10 én gang.
-- −10 hvis uteplassen eller stuen vender mot nord, eller er beskrevet som skyggefull.
-- Mangler solscore, start på 50 og skriv det i `mangler`.
+- **S, sol gjennom dagen:** `sol.solscore` (0–100). Den er målt på bakkenivå i ett målepunkt for hele eiendommen (`sol.malepunkt`), og regner med skygge fra bygg og trær.
+  - **Usikker solscore:** ligger målepunktet ved en annen adresse enn boligen, og tomten er stor (over ca. 5 000 m² eller minst 5 adresser, typisk flere blokker), bruk 60 i stedet. Skriv i begrunnelsen at solscoren er målt ved en annen bygning.
+  - +10 for 4. etasje eller høyere, fordi boligen ligger over mye av skyggen ved bakken.
+- **E, ettermiddagssol:** `2 × (sol.ettermiddagAndel − 50)`. `ettermiddagAndel` er hvor stor del av sola fra kl. 15 til solnedgang som ikke stenges av åser og fjell (snitt 15. mars–15. oktober). Det gir 100 ved 100 %, 80 ved 90 % og 40 ved 70 %. Juster:
+  - Uteplass eller stue mot vest, sørvest eller nordvest: +10. Mot sør: 0. Mot sørøst: −10. Mot øst, nordøst eller nord: −20. Ukjent: 0.
+  - −15 hvis `sol.lokalSkygge` sier at trær eller bygg tar ettermiddagssola. Gjelder bare når målepunktet er ved boligen.
+- Skriv i begrunnelsen morgen- og ettermiddagsandelen og når sola går ned bak terrenget ved jevndøgn (`sol.sisteSolJevndogn`).
+- Mangler solscore eller solretning, bruk 50 for den delen og skriv det i `mangler`.
 
 **Omgivelser.** Start på 60, og juster med tabellen. Hold resultatet mellom 0 og 100.
 
