@@ -46,6 +46,7 @@ Sikkerhetskopi i repoet (`data/leiligheter/<finnkode>.json`) tas bare når bruke
   "braI": 58, "bra": 63, "braE": 5, "pRom": null,
   "soverom": 2, "rom": 3, "etasje": "3",
   "soveromM2": [12.4, 10.8],                     // størrelse på hvert soverom
+  "kontor": { "m2": 6.5, "navn": "Arbeidsrom", "side": 12 },  // eget rom som kan brukes som kontor (se kriterier.md), ellers null
   "byggeaar": 1962, "eieform": "Andel",          // "Selveier" | "Andel" | "Aksje"
   "energimerke": "D", "heis": false, "balkong": true,
   "parkering": "Gateparkering",                  // fritekst eller null

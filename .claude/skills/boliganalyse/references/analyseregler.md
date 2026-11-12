@@ -101,7 +101,7 @@ Bruk bare som anslag, merket «anslag», og oppgi intervallet.
 - Eieform: selveier gir pluss etter vekt. Andel og aksje gir verken pluss eller trekk.
 - **Må-krav** sjekkes mot `kriterier.md`:
   - totalpris (`budForBudsjett` fra `beregn.py`)
-  - soverom (`soverom` og `soveromM2`)
+  - soverom (`soverom`, `soveromM2` og `kontor`)
   - reisetid for begge
   - `mndKostnad`
   - antall større jobber (`storreJobber`)

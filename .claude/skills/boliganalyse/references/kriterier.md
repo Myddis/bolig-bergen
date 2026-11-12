@@ -1,7 +1,7 @@
 # Mine kriterier
 
 Kriteriene til Håkon og Camilla. De styrer delscorene «Mine kriterier» og «Investering», og vektingen av totalscoren.
-Sist oppdatert: 2026-11-11.
+Sist oppdatert: 2026-11-12.
 
 ## Økonomi
 Tallene brukes i `scripts/beregn.py`, som leser blokken under. Behold formatet `nøkkel: verdi`.
@@ -11,7 +11,7 @@ egenkapital: 730000          # kr tilgjengelig egenkapital
 maksTotalpris: 4900000       # finansieringsbevis; gjelder totalpris som på Finn: bud + omkostninger + fellesgjeld
 rente: 5.5                   # nominell rente, Fana Sparebank Boliglån Ung, satt med margin
 nedbetalingAar: 30           # nedbetalingstid boliglån, år
-maksMndKostnad: 25000        # smertegrense for samlet månedskostnad (lån + felleskost. + avgifter), før rentefradrag
+maksMndKostnad: 28000        # smertegrense for samlet månedskostnad (lån + felleskost. + avgifter), før rentefradrag. Hevet fra 25 000 i nov. 2026
 husleie: 20540               # dagens husleie, kr/mnd, brukt i investeringsberegningen
 husleievekst: 3.0            # antatt årlig økning i husleie hvis vi fortsetter å leie, %
 prisvekst: 5.0               # FALLBACK: brukes bare når områdetall mangler. Normalt hentes prisvekst per strøk med scripts/omrade.py
@@ -27,9 +27,11 @@ Lånet er innvilget ut fra framtidig inntekt (finansieringsbevis), så det sjekk
 Brudd på et må-krav gir maks 30 i «Mine kriterier», maks 45 i totalscore og et rødt flagg.
 
 - [ ] **Totalpris ≤ 4,9 mill** (som på Finn: prisantydning + omkostninger + fellesgjeld). `maksBud` er høyeste bud innenfor grensen. Er totalprisen ved prisantydning over, er kravet brutt, og `budForBudsjett` viser hvilket bud som trengs.
-- [ ] **Soverom:** minst 2, **eller** 1 soverom på minst 14 m².
+- [ ] **Soverom:** minst 2, **eller** 1 soverom og i tillegg enten:
+  - soverommet er minst 14 m², eller
+  - boligen har et **kontor**: et eget rom med dør, på minst ca. 5 m², utenom stue, kjøkken og bad. Det kan kalles kontor, arbeidsrom, hobbyrom, gjesterom eller være et lite soverom. Et hjørne eller en nisje i stuen teller ikke.
 - [ ] **Reisetid ≤ 30 min** for **både** Håkon og Camilla (raskeste av kollektiv og gange).
-- [ ] **Månedskostnad ≤ 25 000 kr** (`mndKostnad`, før rentefradrag).
+- [ ] **Månedskostnad ≤ 28 000 kr** (`mndKostnad`, før rentefradrag).
 - [ ] **Oppussing:** høyst **én** større jobb de neste 5 årene (bad, kjøkken, el-anlegg, tak, drenering, vinduer, rør). Helst bare overflate.
 - [ ] Ingen TG3 på våtrom, tak, drenering eller el-anlegg uten at det er tatt høyde for i prisen.
 
