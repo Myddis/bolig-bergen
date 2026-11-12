@@ -215,6 +215,7 @@ section.blk h3 { margin: 0; font-size: 11px; text-transform: uppercase; letter-s
 .bigscore { width: 72px; height: 72px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-family: var(--f-display); font-weight: 700; font-size: 28px; }
 .bars { display: grid; gap: 5px; }
 .bar { display: grid; grid-template-columns: 92px 1fr 28px; gap: 8px; align-items: center; font-size: 12px; }
+.bars.wide .bar { grid-template-columns: 150px 1fr 28px; }
 .bar .track { height: 6px; background: var(--surface-2); border-radius: 3px; overflow: hidden; border: 1px solid var(--line); }
 .bar .fill { height: 100%; border-radius: 3px; }
 .kv { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 16px; }
@@ -561,7 +562,7 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
       ["Soverom", b.soverom ?? "–"],
       ["Kr/m²", krm2(b) ? nf.format(krm2(b)) : "–"],
       ...S.arbeid.map((a) => [a.navn, fmtMin(reise(b, a.id))]),
-      ...(b.investering && b.investering.breakEvenAar ? [["Lønner seg etter", b.investering.breakEvenAar + " år"]] : []),
+      ...(b.sol && b.sol.solscore != null ? [["Solscore", b.sol.solscore + " av 100"]] : []),
     ];
     tip.innerHTML = `<h4>${esc(b.adresse || b.tittel || "Ukjent adresse")}</h4>
       <div class="meta">${esc(b.bydel || "")}${b.eieform ? " · " + esc(b.eieform) : ""}${b.score != null ? ` · <span class="pill score" style="background:${scoreColor(b.score)}">${b.forelopig ? "~" : ""}${b.score}</span>` : ""}${b.forelopig ? ` · <span class="pill pre">Foreløpig</span>` : ""}</div>
@@ -758,13 +759,21 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
       </section>
       ${b.budForBudsjett ? `<section class="blk"><h3>Budsjett</h3><p class="prose">Totalprisen er over finansieringsbeviset. For å holde deg innenfor må budet være høyst <b class="num">${esc(kr(b.budForBudsjett))}</b>${b.prisantydning ? ` (prisantydning ${esc(kr(b.prisantydning))})` : ""}.</p></section>` : ""}
       ${b.investering ? `<section class="blk"><h3>Investering</h3>
-        <div class="kv">
-          <div><span>Kjøp lønner seg etter</span><b class="num">${b.investering.breakEvenAar ? esc(b.investering.breakEvenAar + " år") : "Over 30 år"}</b></div>
-          <div><span>Verdi om 5 år</span><b class="num">${esc(mill(b.investering.verdi5))}</b></div>
-          <div><span>Formue om 5 år, kjøp</span><b class="num">${esc(kr(b.investering.formueKjop5))}</b></div>
-          <div><span>Formue om 5 år, leie</span><b class="num">${esc(kr(b.investering.formueLeie5))}</b></div>
-        </div>
-        <div class="meta" style="color:var(--muted);font-size:12px">Sammenlignet med å fortsette å leie. Formue ved kjøp er etter restlån, fellesgjeld og salgskostnad. ${esc(b.investering.antagelser || "")}</div>
+        ${b.investeringDeler ? `<div class="bars wide">${[["omradeVekst", "Prisvekst i strøket"], ["verdipotensial", "Verdipotensial"], ["salgbarhet", "Salgbarhet"], ["robusthet", "Robusthet (0 % vekst)"]].map(([k, t]) => { const v = b.investeringDeler[k]; return `<div class="bar"><span>${t}</span><span class="track"><span class="fill" style="display:block;width:${v ?? 0}%;background:${scoreColor(v)}"></span></span><span class="num">${v ?? "–"}</span></div>`; }).join("")}</div>` : ""}
+        ${b.investering.scenarier ? `<div style="overflow-x:auto"><table class="commtab"><thead><tr><th>Scenario</th><th class="r">Prisvekst</th><th class="r">Lønner seg etter</th><th class="r">Gevinst mot leie om 5 år</th></tr></thead><tbody>
+          ${[["pessimistisk", "Pessimistisk"], ["forventet", "Forventet"], ["optimistisk", "Optimistisk"]].map(([k, t]) => { const sc = b.investering.scenarier[k] || {}; return `<tr><td><b>${t}</b></td><td class="r num">${sc.vekst != null ? esc(String(sc.vekst).replace(".", ",")) + " %" : "–"}</td><td class="r num">${sc.breakEvenAar ? esc(sc.breakEvenAar + " år") : "over 30 år"}</td><td class="r num">${esc(kr(sc.gevinst5))}</td></tr>`; }).join("")}
+        </tbody></table></div>` : `<div class="kv"><div><span>Kjøp lønner seg etter</span><b class="num">${b.investering.breakEvenAar ? esc(b.investering.breakEvenAar + " år") : "Over 30 år"}</b></div></div>`}
+        ${b.omrade ? `<div class="kv">
+          <div><span>Strøk</span><b>${b.omrade.url ? `<a href="${esc(b.omrade.url)}" target="_blank" rel="noopener">${esc(b.omrade.navn)}</a>` : esc(b.omrade.navn)}</b></div>
+          <div><span>Median kr/m² i strøket</span><b class="num">${b.omrade.medianKrM2Leiligheter ? esc(nf.format(b.omrade.medianKrM2Leiligheter)) : "–"}</b></div>
+          <div><span>Årlig vekst, strøket / Bergen</span><b class="num">${esc(String(b.omrade.vekst5aar ?? "–").replace(".", ","))} % / ${esc(String(b.omrade.bergenVekst5aar ?? "–").replace(".", ","))} %</b></div>
+          <div><span>Siste 12 mnd, strøket / Bergen</span><b class="num">${esc(String(b.omrade.vekst12mnd ?? "–").replace(".", ","))} % / ${esc(String(b.omrade.bergenVekst12mnd ?? "–").replace(".", ","))} %</b></div>
+          ${b.marked && b.marked.avvikProsent != null ? `<div><span>Typisk salg mot prisantydning</span><b class="num">${b.marked.avvikProsent > 0 ? "+" : ""}${esc(String(b.marked.avvikProsent).replace(".", ","))} %</b></div>` : ""}
+          ${b.forventetPris ? `<div><span>Mnd. ved forventet pris (${esc(mill(b.forventetPris))})</span><b class="num">${esc(kr(b.mndKostnadForventetPris))}</b></div>` : ""}
+          ${b.sol && b.sol.solscore != null ? `<div><span>Solscore</span><b class="num">${esc(b.sol.solscore)} av 100</b></div>` : ""}
+          ${b.kollektivFrekvens ? `<div><span>Avganger i rushtiden</span><b class="num">${esc(b.kollektivFrekvens.avgangerRushtid)} i timen</b></div>` : ""}
+        </div>` : ""}
+        <div class="meta" style="color:var(--muted);font-size:12px">Sammenlignet med å fortsette å leie. Formue ved kjøp er etter restlån, fellesgjeld og salgskostnad. Prisvekst i strøket er årlig snitt fra tinglyste salg (Eiendomssjekk); Bergen fra SSB. ${esc(b.investering.antagelser || "")}</div>
       </section>` : ""}
       ${S.arbeid.length ? `<section class="blk"><h3>Reisetid til jobb</h3>
         <div style="overflow-x:auto"><table class="commtab"><thead><tr><th></th><th class="r">Kollektiv</th><th class="r">Gange</th><th class="r">Sykkel</th></tr></thead><tbody>${commRows}</tbody></table></div>

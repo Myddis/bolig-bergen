@@ -14,7 +14,8 @@ nedbetalingAar: 30           # nedbetalingstid boliglån, år
 maksMndKostnad: 25000        # smertegrense for samlet månedskostnad (lån + felleskost. + avgifter), før rentefradrag
 husleie: 20540               # dagens husleie, kr/mnd, brukt i investeringsberegningen
 husleievekst: 3.0            # antatt årlig økning i husleie hvis vi fortsetter å leie, %
-prisvekst: 8.0               # antatt årlig prisvekst, % (siste 12 mnd i Bergen ifølge Hjemla; optimistisk hvis veksten flater ut)
+prisvekst: 5.0               # FALLBACK: brukes bare når områdetall mangler. Normalt hentes prisvekst per strøk med scripts/omrade.py
+vedlikeholdAar: 10000        # innvendig vedlikehold per år som eier, kr (maling, hvitevarer, småreparasjoner)
 alternativAvkastning: 4.0    # årlig avkastning på sparing hvis vi fortsetter å leie, %
 salgskostnad: 80000          # meglerhonorar og markedsføring ved et senere salg, kr
 rentefradrag: 22             # skattefradrag på renteutgifter, %

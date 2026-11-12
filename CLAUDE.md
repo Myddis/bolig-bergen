@@ -10,7 +10,8 @@ Privat verktøy for å vurdere leiligheter i Bergen. Svar på norsk (bokmål).
 ## Struktur
 - `scripts/geokod.py`: adresse til koordinater og bydel (Kartverket, ws.geonorge.no).
 - `scripts/reisetid.py`: kollektiv, gange og sykkel til arbeidsstedene (Entur, api.entur.io).
-- `scripts/beregn.py`: totalpris, kr/m² og månedskostnad.
+- `scripts/omrade.py`: prisutvikling i strøket, budmarked, solscore (Eiendomssjekk) og Bergen-indeks (SSB).
+- `scripts/beregn.py`: totalpris, kr/m², månedskostnad og investering i tre scenarier.
 - `scripts/bygg_kart.py`: bygger `oversikt/bergen.topo.json` fra Kartverket N50 og SSB-bydeler. Kjøres sjelden.
 - `oversikt/index.html` + `oversikt/bergen.topo.json`: kilden til artifacten.
   - Publiser på nytt med Artifact-verktøyet, `url` = artifact-URL-en over og `files: {"bergen.topo.json": "oversikt/bergen.topo.json"}`.
@@ -18,7 +19,7 @@ Privat verktøy for å vurdere leiligheter i Bergen. Svar på norsk (bokmål).
 - `data/leiligheter/*.json`: sikkerhetskopi, tas bare når Håkon ber om det. Databasen er hovedlageret.
 
 ## Nettverk
-Skymiljøet `bolig-bergen` slipper til `www.finn.no`, `ws.geonorge.no`, `api.entur.io` og `nedlasting.geonorge.no`.
+Skymiljøet `bolig-bergen` slipper til `www.finn.no`, `ws.geonorge.no`, `api.entur.io`, `nedlasting.geonorge.no`, `data.ssb.no` og `eiendomssjekk.no`.
 Finn blokkerer WebFetch og `curl` fra skyen (DataDome). Ikke prøv å omgå det.
 Les Finn gjennom Håkons egen nettleser når verktøyene finnes: Claude i Chrome (`claude-in-chrome`) eller nettleseren i Claude-appen (`Claude_Browser`). Ellers brukes salgsoppgaven og skjermbilder.
 Håkon (arbeidssted-id `meg`) og samboeren Camilla (`samboer`) er brukerne.

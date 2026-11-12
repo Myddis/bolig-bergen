@@ -87,15 +87,34 @@ Sikkerhetskopi i repoet (`data/leiligheter/<finnkode>.json`) tas bare når bruke
   "bybane": { "stopp": "Wergeland", "meter": 290, "gangMin": 4 },
   "buss": { "stopp": "Wergelandsveien", "meter": 120, "gangMin": 2 },   // reisetid.py → _buss
 
-  // Investering (beregn.py): kjøp mot å fortsette å leie
+  // Strøk og marked (scripts/omrade.py)
+  "omrade": { "navn": "Sandviken", "url": "https://eiendomssjekk.no/omraade/sandviken-bergen", "medianKrM2": 86154,
+              "medianKrM2Leiligheter": 86291, "salg12mnd": 750, "vekst5aar": 5.2, "vekst12mnd": 7.8,
+              "bergenVekst5aar": 7.1, "bergenVekst12mnd": 10.5 },
+  "marked": { "avvikProsent": 3.3, "andelOver": 65, "dagerPaaMarkedet": 9, "grunnlagSalg": 297 },
+  "sol": { "solscore": 63, "timerJuni": 17.3, "timerDes": 4.8, "solvurdering": "Middels solforhold" },
+  "kollektivFrekvens": { "stopp": "Buss, Eikeviken", "avstand": "1 min til fots (70 m)", "avgangerRushtid": 23 },
+  "kilderOmrade": ["https://eiendomssjekk.no/…", "https://www.ssb.no/statbank/table/07221"],
+  "prisvekst": { "pessimistisk": 0, "forventet": 5.2, "optimistisk": 7.8, "kilde": "Eiendomssjekk, tinglyste salg i Sandviken …" },
+  "verdiokningOppussing": 10000,                 // anslått verdiløft fra oppussingEstimat (analyseregler.md)
+  "forventetPris": 4122000,                      // beregn.py: prisantydning × (1 + typisk budavvik i strøket)
+  "mndKostnadForventetPris": 25752,              // beregn.py
+
+  // Investering (beregn.py): kjøp mot å fortsette å leie, tre scenarier
   "investering": {
-    "breakEvenAar": 2, "verdi5": 6390000, "formueKjop5": 2300000, "formueLeie5": 1100000, "gevinst5": 1200000,
-    "antagelser": "Prisvekst 8.0 %/år, rente 5.5 %, …"
+    "scenarier": {
+      "pessimistisk": { "vekst": 0, "breakEvenAar": 10, "verdi5": 4107021, "formueKjop5": 810078, "formueLeie5": 1012890, "gevinst5": -202811 },
+      "forventet":    { "vekst": 5.2, "breakEvenAar": 2, "…": "…" },
+      "optimistisk":  { "vekst": 7.8, "breakEvenAar": 1, "…": "…" }
+    },
+    "breakEvenAar": 2, "verdi5": 5291827, "formueKjop5": 1994884, "formueLeie5": 1012890, "gevinst5": 981995,   // = forventet
+    "antagelser": "Prisvekst 0 / 5.2 / 7.8 %/år …"
   },
+  "investeringDeler": { "omradeVekst": 40, "verdipotensial": 50, "salgbarhet": 70, "robusthet": 50 },
 
   // Vurdering
   "score": 72,                                   // foreløpig score hvis forelopig: true
-  "delscorer": { "pris": 70, "tilstand": 66, "okonomi": 75, "beliggenhet": 80, "kriterier": 70, "investering": 85 },
+  "delscorer": { "pris": 70, "tilstand": 66, "okonomi": 75, "beliggenhet": 80, "kriterier": 70, "investering": 52 },
   "delscoreBegrunnelse": { "pris": "…", "tilstand": "…", "okonomi": "…", "beliggenhet": "…", "kriterier": "…", "investering": "…" },
   "oppsummering": "2–4 setninger med anbefaling.",
   "styrker": ["…"],

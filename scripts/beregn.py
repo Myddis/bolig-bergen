@@ -4,7 +4,9 @@ Bruk:  python3 scripts/beregn.py data/leiligheter/<finnkode>.json
 
 Totalpris regnes som på Finn: prisantydning + omkostninger + fellesgjeld.
 Regner ut: totalpris, prisInklFellesgjeld, maksBud, krPerM2 (uten omkostninger), felleskostPerM2, mndKostnad, mndKostnadEtterFradrag,
-budForBudsjett og investering (år før kjøp lønner seg mot å leie, formue om 5 år).
+budForBudsjett, forventetPris/mndKostnadForventetPris (fra typisk budavvik i strøket) og investering
+(tre prisvekst-scenarier: år før kjøp lønner seg mot å leie og formue om 5 år, med oppussing,
+verdiløft og vedlikehold).
 Lånebeløp = prisantydning + omkostninger - egenkapital (fellesgjeld betjenes via felleskost.).
 Økonomiske forutsetninger leses fra ```kriterier-blokker i references/kriterier.md.
 """
@@ -88,8 +90,16 @@ def main(sti):
         )
         if not d.get("fellesMnd"):
             mangler.append("fellesMnd")
-        if "husleie" in k and "prisvekst" in k:
-            d["investering"] = investering(verdi, fg, laan, lan_mnd, felles + avg, k)
+        if "husleie" in k:
+            d["investering"] = investering(d, verdi, fg, laan, lan_mnd, felles + avg, k)
+        # Månedskostnad ved forventet salgspris i strøket (typisk avvik mot prisantydning)
+        avvik = (d.get("marked") or {}).get("avvikProsent")
+        if avvik is not None:
+            fpris = int(round(pa * (1 + avvik / 100), -3))
+            ekstra_omk = 0.025 * (fpris - pa) if (d.get("eieform") or "").lower() == "selveier" else 0
+            laan_f = max(0, fpris + omk + ekstra_omk - k["egenkapital"])
+            d["forventetPris"] = fpris
+            d["mndKostnadForventetPris"] = round(annuitet(laan_f, k["rente"], aar) + felles + avg)
     else:
         d["mndKostnad"] = None
 
@@ -106,7 +116,8 @@ def main(sti):
 
     p.write_text(json.dumps(d, ensure_ascii=False, indent=1) + "\n")
     print(json.dumps({k2: d.get(k2) for k2 in ("totalpris", "prisInklFellesgjeld", "maksBud", "krPerM2", "felleskostPerM2", "mndKostnad",
-                                               "mndKostnadEtterFradrag", "mndKostnadForklaring", "budForBudsjett", "investering")},
+                                               "mndKostnadEtterFradrag", "forventetPris", "mndKostnadForventetPris",
+                                               "mndKostnadForklaring", "budForBudsjett", "investering")},
                      ensure_ascii=False, indent=1))
     if mangler:
         print("MANGLER:", ", ".join(mangler), file=sys.stderr)
@@ -117,26 +128,43 @@ def main(sti):
         print(f"MÅ-KRAV BRUTT: månedskostnad {kr(d['mndKostnad'])} er over {kr(k['maksMndKostnad'])}", file=sys.stderr)
 
 
-def investering(tp, fg, laan, lan_mnd, faste_mnd, k):
-    """Kjøp mot å fortsette å leie, måned for måned i 30 år.
+def scenarier(d, k):
+    """Prisvekst-scenarier (% per år). Fra dokumentets `prisvekst` (satt fra scripts/omrade.py),
+    ellers fallback til `prisvekst` i kriterier.md."""
+    pv = d.get("prisvekst") or {}
+    forv = pv.get("forventet")
+    if forv is None:
+        forv = k.get("prisvekst", 4.0)
+    opt = pv.get("optimistisk")
+    if opt is None or opt < forv:
+        opt = forv + 2
+    pes = pv.get("pessimistisk", 0.0)
+    return {"pessimistisk": pes, "forventet": forv, "optimistisk": opt}
 
-    Kjøp: verdi vokser med prisvekst; formue = verdi - restlån - fellesgjeld (antas uendret) - salgskostnad.
-    Leie: egenkapitalen spares med alternativ avkastning; hver måned spares (kjøpskostnad etter
-    rentefradrag - husleie), negativt hvis kjøp er billigere. Husleien øker med husleievekst.
+
+def simuler(verdi0, fg, laan, lan_mnd, faste_mnd, k, vekst, oppussing=0, verdiloft=0):
+    """Kjøp mot å fortsette å leie, måned for måned i 30 år, med gitt årlig prisvekst (%).
+
+    Kjøp: verdi (pris inkl. fellesgjeld, pluss verdiløft fra oppussing) vokser med prisveksten.
+    Formue = verdi - restlån - fellesgjeld (antas uendret) - salgskostnad. Månedlig kostnad =
+    lån + felleskost./avgifter + vedlikehold - rentefradrag. Oppussingskostnaden betales ved kjøp.
+    Leie: egenkapitalen (og pengene som ellers gikk til oppussing) spares med alternativ avkastning;
+    hver måned spares forskjellen mellom kjøpskostnad og husleie (negativt hvis kjøp er billigere).
     """
     r = k["rente"] / 100 / 12
-    g = (1 + k["prisvekst"] / 100) ** (1 / 12) - 1
+    g = (1 + vekst / 100) ** (1 / 12) - 1
     a = (1 + k.get("alternativAvkastning", 4) / 100) ** (1 / 12) - 1
     hv = k.get("husleievekst", 3) / 100
     fradrag = k.get("rentefradrag", 22) / 100
     salg = k.get("salgskostnad", 80000)
-    rest, sparing, verdi = laan, float(k["egenkapital"]), float(tp)
+    vedlikehold = k.get("vedlikeholdAar", 0) / 12
+    rest, sparing, verdi = laan, float(k["egenkapital"]) + oppussing, float(verdi0) + verdiloft
     break_even, aar5 = None, {}
     for m in range(1, 361):
         renter = rest * r
         avdrag = min(rest, lan_mnd - renter) if rest > 0 else 0
         rest -= avdrag
-        kost_kjop = (renter + avdrag) + faste_mnd - fradrag * renter
+        kost_kjop = (renter + avdrag) + faste_mnd + vedlikehold - fradrag * renter
         husleie = k["husleie"] * (1 + hv) ** ((m - 1) // 12)
         sparing = sparing * (1 + a) + (kost_kjop - husleie)
         verdi *= 1 + g
@@ -147,15 +175,29 @@ def investering(tp, fg, laan, lan_mnd, faste_mnd, k):
                 break_even = y
             if y == 5:
                 aar5 = {"verdi": verdi, "kjop": formue_kjop, "leie": sparing}
+    return {"vekst": vekst, "breakEvenAar": break_even, "verdi5": round(aar5["verdi"]),
+            "formueKjop5": round(aar5["kjop"]), "formueLeie5": round(aar5["leie"]),
+            "gevinst5": round(aar5["kjop"] - aar5["leie"])}
+
+
+def investering(d, verdi0, fg, laan, lan_mnd, faste_mnd, k):
+    sc = scenarier(d, k)
+    oppussing = d.get("oppussingEstimat") or 0
+    verdiloft = d.get("verdiokningOppussing") or 0
+    res = {navn: simuler(verdi0, fg, laan, lan_mnd, faste_mnd, k, v, oppussing, verdiloft) for navn, v in sc.items()}
+    f = res["forventet"]
+    kilde = (d.get("prisvekst") or {}).get("kilde") or "fallback fra kriterier.md (ingen områdetall)"
     return {
-        "breakEvenAar": break_even,
-        "verdi5": round(aar5["verdi"]),
-        "formueKjop5": round(aar5["kjop"]),
-        "formueLeie5": round(aar5["leie"]),
-        "gevinst5": round(aar5["kjop"] - aar5["leie"]),
-        "antagelser": (f"Prisvekst {k['prisvekst']} %/år, rente {k['rente']} %, husleie {kr(k['husleie'])} kr/mnd "
-                       f"(+{k.get('husleievekst', 3)} %/år), avkastning på sparing {k.get('alternativAvkastning', 4)} %, "
-                       f"rentefradrag {k.get('rentefradrag', 22)} %, salgskostnad {kr(salg)} kr, fellesgjeld uendret."),
+        "scenarier": res,
+        # Forventet scenario, for visning og score:
+        "breakEvenAar": f["breakEvenAar"], "verdi5": f["verdi5"], "formueKjop5": f["formueKjop5"],
+        "formueLeie5": f["formueLeie5"], "gevinst5": f["gevinst5"],
+        "antagelser": (f"Prisvekst {sc['pessimistisk']} / {sc['forventet']} / {sc['optimistisk']} %/år "
+                       f"(pessimistisk / forventet / optimistisk; kilde: {kilde}). Rente {k['rente']} %, husleie "
+                       f"{kr(k['husleie'])} kr/mnd (+{k.get('husleievekst', 3)} %/år), avkastning på sparing "
+                       f"{k.get('alternativAvkastning', 4)} %, rentefradrag {k.get('rentefradrag', 22)} %, vedlikehold "
+                       f"{kr(k.get('vedlikeholdAar', 0))} kr/år, oppussing {kr(oppussing)} kr med verdiløft {kr(verdiloft)} kr, "
+                       f"salgskostnad {kr(k.get('salgskostnad', 80000))} kr, fellesgjeld uendret."),
     }
 
 
