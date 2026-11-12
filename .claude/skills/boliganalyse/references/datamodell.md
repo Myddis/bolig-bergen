@@ -137,6 +137,8 @@ Sikkerhetskopi i repoet (`data/leiligheter/<finnkode>.json`) tas bare når bruke
   "styrker": ["…"],
   "svakheter": ["…"],
   "rodeFlagg": ["TG3 på bad: lekkasje ved sluk (PDF s. 31)"],
+  "gronneFlagg": ["BOB-forkjøpsrett: dere kan gå inn på høyeste bud (PDF s. 13)"],   // analyseregler.md, «Grønne flagg»
+  "bobForkjopsrett": true,                       // true | false | null (ukjent)
   "sporsmal": ["Når ble badet sist pusset opp, og finnes det dokumentasjon?"],
   "visninger": [{ "dato": "2026-11-16", "tid": "12:00–13:00" }],
   "mangler": ["Energimerke ikke oppgitt"],

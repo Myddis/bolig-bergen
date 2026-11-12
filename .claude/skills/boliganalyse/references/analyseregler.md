@@ -28,9 +28,15 @@
 - Felleskostnader over ca. 55 kr/m² BRA-i per mnd (husk å se hva de dekker).
 - Fukt, råte, sopp eller skadedyr nevnt i rapport eller egenerklæring.
 - Vesentlige «ja»-svar i egenerklæringen: tidligere vannskader, arbeid uten fagfolk, pågående tvister.
-- Forkjøpsrett, eller vedtekter som hindrer dyrehold eller utleie hvis det betyr noe for brukeren.
+- Forkjøpsrett for andre enn BOB-medlemmer (f.eks. OBOS eller Vestbo), som kan gjøre at dere mister boligen etter budrunden. Vedtekter som hindrer dyrehold eller utleie, hvis det betyr noe for brukeren.
+- BOB-forkjøpsrett som allerede er forhåndsutlyst med interessenter, slik at andre BOB-medlemmer med lengre ansiennitet kan ta boligen.
 - Høy radon, eller ikke målt i sokkel/1. etasje.
 - Totalpris over kjøpsrammen, reisetid over 30 min, månedskostnad over grensen eller mer enn én større jobb (se «Røde flagg fra kriteriene deres»).
+
+## Grønne flagg (alltid med i `gronneFlagg` hvis de finnes)
+Klare fordeler for akkurat Håkon og Camilla. Grønne flagg påvirker ikke scoren direkte, men skal nevnes i `oppsummering`.
+- **BOB-forkjøpsrett:** andel i et borettslag tilknyttet BOB der BOB-medlemmer har forkjøpsrett. Håkon og Camilla er BOB-medlemmer og kan gå inn på høyeste bud. Sett `bobForkjopsrett: true`, og skriv fristen for å melde interesse og om forkjøpsretten er forhåndsutlyst. Er den forhåndsutlyst, kan forkjøpsretten bare brukes hvis dere meldte interesse innen fristen. Skriv det tydelig.
+- Sett `bobForkjopsrett: false` når forkjøpsretten tilhører et annet boligbyggelag eller det ikke er forkjøpsrett, og `null` når det er ukjent.
 
 ## Grove kostnadsintervaller (når takstmannen ikke oppgir tall)
 Bruk bare som anslag, merket «anslag», og oppgi intervallet.

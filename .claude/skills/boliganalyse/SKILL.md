@@ -151,6 +151,7 @@ Mangler områdetall (feil fra Eiendomssjekk), gjør ett WebSearch-søk etter pri
    - `oppsummering`: 2–4 setninger, med en klar anbefaling (verdt en visning eller ikke, og hvorfor).
    - `styrker` og `svakheter`: 3–6 punkter hver.
    - `rodeFlagg`: bare reelle forhold, med kilde («PDF s. 14»).
+   - `gronneFlagg` og `bobForkjopsrett`: se «Grønne flagg» i `analyseregler.md`.
    - `sporsmal`: 4–8 konkrete spørsmål til megler eller visning.
    - `oppussingEstimat`: grovt anslag i kr. Bruk takstmannens tall der de finnes, ellers intervallene i `analyseregler.md`. Oppgi midtpunktet og skriv intervallet i teksten.
 

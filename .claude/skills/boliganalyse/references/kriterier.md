@@ -36,6 +36,7 @@ Fra `boligscore.md`. Dette er en profil, ikke absolutte krav: ingenting gir tak 
 - **Soverom:** helst to. En god toroms (ett soverom), gjerne med kontor, kan også være aktuell.
 - **Standard:** gjerne eldre kjøkken eller overflater som kan moderniseres, men et forsvarlig teknisk utgangspunkt. Badet bør helst ha dokumentert god tilstand. Mer enn én større jobb de neste 5 årene er et rødt flagg.
 - **Ellers et pluss:** balkong eller terrasse, gode lysforhold og lite innsyn, fornuftige energikostnader (energimerke A/B gir grønt boliglån), heis fra 3. etasje, parkering eller sykkelbod.
+- **BOB-medlemmer:** Håkon og Camilla er medlemmer i BOB. BOB-forkjøpsrett er et grønt flagg. Forkjøpsrett for andre boligbyggelag er et rødt flagg.
 - **Månedskostnad:** over 28 000 kr før rentefradrag (`maksMndKostnad`) er et rødt flagg og gir lav karakter i Løpende kostnader.
 
 ## Vekter (poeng av 100)
