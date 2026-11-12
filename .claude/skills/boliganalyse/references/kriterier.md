@@ -27,14 +27,16 @@ Lånet er innvilget ut fra framtidig inntekt (finansieringsbevis), så det sjekk
 Energimerket påvirker renten. Med energimerke A eller B (bare A hvis boligen er bygget etter 2019) kan vi få Grønt boliglån i Fana Sparebank, som i dag er 0,25 prosentpoeng lavere enn Boliglån Ung. `beregn.py` bruker da `renteGront` i månedskostnad, budsjett og investering, og setter `rente` og `grontLan` i dokumentet. Er energimerket ukjent, regnes det med vanlig rente. Sjekk satsene i Fana Sparebanks prisliste av og til.
 
 ## Må-krav
-Brudd på et må-krav gir maks 30 i «Mine kriterier», maks 45 i totalscore og et rødt flagg.
+Det er to typer krav:
+- **Harde krav** (totalpris, soverom, oppussing og TG3): brudd gir maks 30 i «Mine kriterier», maks 45 i totalscore og et rødt flagg.
+- **Myke krav** (reisetid og månedskostnad): ingen tak. Hvert minutt eller hver krone over grensen gir et gradvis trekk i totalscoren, og et rødt flagg. Ett minutt over skal ikke velte en ellers god bolig.
 
 - [ ] **Totalpris ≤ 4,9 mill** (som på Finn: prisantydning + omkostninger + fellesgjeld). `maksBud` er høyeste bud innenfor grensen. Er totalprisen ved prisantydning over, er kravet brutt, og `budForBudsjett` viser hvilket bud som trengs.
 - [ ] **Soverom:** minst 2, **eller** 1 soverom og i tillegg enten:
   - soverommet er minst 14 m², eller
   - boligen har et **kontor**: et eget rom med dør, på minst ca. 5 m², utenom stue, kjøkken og bad. Det kan kalles kontor, arbeidsrom, hobbyrom, gjesterom eller være et lite soverom. Et hjørne eller en nisje i stuen teller ikke.
-- [ ] **Reisetid ≤ 30 min** for **både** Håkon og Camilla (raskeste av kollektiv og gange).
-- [ ] **Månedskostnad ≤ 28 000 kr** (`mndKostnad`, før rentefradrag).
+- [ ] **Reisetid ≤ 30 min** for **både** Håkon og Camilla (raskeste av kollektiv og gange). *Mykt krav:* −3 i totalscore per minutt den lengste av de to reisene er over 30, maks −30.
+- [ ] **Månedskostnad ≤ 28 000 kr** (`mndKostnad`, før rentefradrag). *Mykt krav:* −3 i totalscore per 500 kr over (forholdsmessig), maks −30.
 - [ ] **Oppussing:** høyst **én** større jobb de neste 5 årene (bad, kjøkken, el-anlegg, tak, drenering, vinduer, rør). Helst bare overflate.
 - [ ] Ingen TG3 på våtrom, tak, drenering eller el-anlegg uten at det er tatt høyde for i prisen.
 

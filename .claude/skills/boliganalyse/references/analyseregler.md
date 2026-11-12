@@ -30,7 +30,7 @@
 - Vesentlige «ja»-svar i egenerklæringen: tidligere vannskader, arbeid uten fagfolk, pågående tvister.
 - Forkjøpsrett, eller vedtekter som hindrer dyrehold eller utleie hvis det betyr noe for brukeren.
 - Høy radon, eller ikke målt i sokkel/1. etasje.
-- Et må-krav i `kriterier.md` er brutt.
+- Et må-krav i `kriterier.md` er brutt (hardt eller mykt).
 
 ## Grove kostnadsintervaller (når takstmannen ikke oppgir tall)
 Bruk bare som anslag, merket «anslag», og oppgi intervallet.
@@ -78,15 +78,7 @@ Bruk bare som anslag, merket «anslag», og oppgi intervallet.
 
 ### Beliggenhet (`beliggenhet`)
 - Grunnlag: den **lengste** av de to reisetidene til jobb (Håkon og Camilla), der hver reisetid er det raskeste av kollektiv og gange. Reisetid til sentrum teller ikke.
-
-  | Reisetid | Grunnlag |
-  |---|---|
-  | ≤ 15 min | 100 |
-  | ≤ 20 min | 90 |
-  | ≤ 25 min | 80 |
-  | ≤ 30 min | 70 |
-  | ≤ 40 min | 50 |
-  | Over 40 min | 30 |
+- Grunnlaget er glidende: `100 − 2 × (minutter − 15)`, mellom 30 og 100. Det gir 100 ved 15 min, 90 ved 20, 80 ved 25, 70 ved 30, 50 ved 40 og 30 ved 50 min eller mer.
 
 - Ingen justering for område (se `kriterier.md`).
 - Solforhold: bruk `sol.solscore` fra `scripts/omrade.py`. ≥ 75 gir +10, ≤ 45 gir −10. Vurder også salgsoppgavens beskrivelse og retningen på uteplassen.
@@ -107,7 +99,8 @@ Bruk bare som anslag, merket «anslag», og oppgi intervallet.
   - `mndKostnad`
   - antall større jobber (`storreJobber`)
   - TG3
-- Hvis et må-krav er brutt: maks 30, legg bruddet i `rodeFlagg`, og nevn det først i `oppsummering`.
+- Hvis et **hardt** må-krav er brutt (totalpris, soverom, oppussing, TG3): maks 30, legg bruddet i `rodeFlagg`, og nevn det først i `oppsummering`.
+- **Myke** må-krav (reisetid, månedskostnad) gir ikke tak her. De trekker i totalscoren (se «Totalscore»), og bruddet skal stå i `rodeFlagg` og i `oppsummering`.
 
 ### Investering (`investering`)
 Satt sammen av fire deler. Regn ut hver del, skriv dem i `investeringDeler` og i begrunnelsen, og sett
@@ -173,7 +166,12 @@ Hold resultatet mellom 0 og 100.
 
 ### Totalscore
 `score = round(sum(delscore × vekt))` med de seks vektene fra `kriterier.md` (pris, tilstand, økonomi, beliggenhet, kriterier, investering).
-Hvis et må-krav er brutt, er maks totalscore 45.
+Trekk for myke må-krav, i totalscoren:
+- Reisetid: `3 × (lengste jobbreise − 30)` når den er over 30 min, maks 30.
+- Månedskostnad: `round(3 × (mndKostnad − maksMndKostnad) / 500)` når den er over grensen, maks 30.
+
+`score = round(sum(delscore × vekt)) − trekk`, minst 0. Er et **hardt** må-krav brutt, er maks totalscore 45 (etter trekket).
+Lagre trekket i `scoreTrekk` (`{"reisetid": 3, "mndKostnad": 0}`), og nevn det i begrunnelsen.
 
 ## Foreløpig modus
 Brukes når pris- eller økonomitallene mangler (typisk: PDF-en er bare vedlegg og Finn-annonsen er blokkert), og brukeren har sagt «fortsett».

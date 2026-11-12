@@ -121,6 +121,7 @@ Sikkerhetskopi i repoet (`data/leiligheter/<finnkode>.json`) tas bare når bruke
   // Vurdering
   "score": 72,                                   // foreløpig score hvis forelopig: true
   "delscorer": { "pris": 70, "tilstand": 66, "okonomi": 75, "beliggenhet": 80, "kriterier": 70, "investering": 52 },
+  "scoreTrekk": { "reisetid": 3, "mndKostnad": 0 },  // trekk i totalscore for myke må-krav (analyseregler.md, «Totalscore»)
   "delscoreBegrunnelse": { "pris": "…", "tilstand": "…", "okonomi": "…", "beliggenhet": "…", "kriterier": "…", "investering": "…" },
   "oppsummering": "2–4 setninger med anbefaling.",
   "styrker": ["…"],

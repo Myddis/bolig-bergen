@@ -815,6 +815,7 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
           <div class="bigscore" style="background:${scoreColor(b.score)}">${b.score ?? "–"}</div>
           <div class="bars">${DELSCORER.map(([k, t]) => { const v = (b.delscorer || {})[k]; return `<div class="bar"><span>${t}</span><span class="track"><span class="fill" style="display:block;width:${v ?? 0}%;background:${scoreColor(v)}"></span></span><span class="num">${v ?? "–"}</span></div>`; }).join("")}</div>
         </div>
+        ${b.scoreTrekk && (b.scoreTrekk.reisetid || b.scoreTrekk.mndKostnad) ? `<div class="meta" style="color:var(--muted);font-size:12px">Trekk i totalscoren: ${[b.scoreTrekk.reisetid ? `reisetid over 30 min −${esc(b.scoreTrekk.reisetid)}` : "", b.scoreTrekk.mndKostnad ? `månedskostnad over grensen −${esc(b.scoreTrekk.mndKostnad)}` : ""].filter(Boolean).join(", ")}</div>` : ""}
         ${b.oppsummering ? `<p class="prose">${esc(b.oppsummering)}</p>` : ""}
       </section>
       ${(b.rodeFlagg || []).length ? `<section class="blk"><h3>Røde flagg</h3>${list(b.rodeFlagg, "flags")}</section>` : ""}
