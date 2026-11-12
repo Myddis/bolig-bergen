@@ -445,7 +445,7 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
     return v.length ? Math.min(...v) : null;
   };
   const scoreColor = (s) => s == null ? css("--none") : s >= 75 ? css("--good") : s >= 55 ? css("--mid") : css("--bad");
-  const minColor = (m) => m == null ? css("--none") : m <= 15 ? css("--good") : m <= 30 ? css("--mid") : css("--bad");
+  const minColor = (m) => m == null ? css("--none") : m <= 20 ? css("--good") : m <= 30 ? css("--mid") : css("--bad");
   let krm2Scale = null;
   function colorFor(b) {
     if (S.colorby === "score") return scoreColor(b.score);
@@ -653,7 +653,7 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
       L.innerHTML = `<div class="t">Kr/m² (BRA-i)</div>${rows}`;
     } else {
       const a = S.arbeid.find((x) => "reise:" + x.id === S.colorby);
-      rows = [["--good", "15 min eller mindre"], ["--mid", "16–30 min"], ["--bad", "over 30 min"]]
+      rows = [["--good", "20 min eller mindre"], ["--mid", "21–30 min"], ["--bad", "over 30 min"]]
         .map(([c, t]) => `<div class="row"><span class="sw" style="background:var(${c})"></span>${t}</div>`).join("");
       L.innerHTML = `<div class="t">Reisetid ${esc(a ? a.navn : "")}</div>${rows}<div class="src">Raskeste av kollektiv og gange</div>`;
     }
