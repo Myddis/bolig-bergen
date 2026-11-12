@@ -77,6 +77,13 @@ def eiendom(gnr, bnr):
         ut["timerJuni"], ut["timerDes"] = tall(m.group(1)), tall(m.group(2))
     m = re.search(r"(\w+ solforhold) \|", s)
     ut["solvurdering"] = m.group(1) if m else None
+    # Solscoren gjelder ett målepunkt for hele eiendommen. På store tomter med flere bygg kan det ligge langt unna boligen.
+    m = re.search(r"Målepunkt nærmest ([^|]+?) \|", s)
+    ut["malepunkt"] = m.group(1).strip() if m else None
+    m = re.search(r"Alle adresser \((\d+)\)", s)
+    ut["adresserPaaEiendom"] = int(m.group(1)) if m else 1
+    m = re.search(r"Tomteareal \| ([\d  ]+) m²", s)
+    ut["tomtM2"] = int(re.sub(r"\D", "", m.group(1))) if m else None
     m = re.search(r"Kollektiv \| ([^|]+) \| ([^|]+) \| Avganger i timen i rushet[^|]*\| ([\d,]+)", s)
     if m:
         ut["kollektiv"] = {"stopp": m.group(1).strip(), "avstand": m.group(2).strip(), "avgangerRushtid": tall(m.group(3))}
@@ -157,7 +164,7 @@ def main(gnr, bnr):
     ut = {"kilder": []}
     try:
         e = eiendom(gnr, bnr)
-        ut["sol"] = {k: e.get(k) for k in ("solscore", "timerJuni", "timerDes", "solvurdering")}
+        ut["sol"] = {k: e.get(k) for k in ("solscore", "timerJuni", "timerDes", "solvurdering", "malepunkt", "adresserPaaEiendom", "tomtM2")}
         ut["kollektiv"] = e.get("kollektiv")
         ut["kilder"].append(e["url"])
         try:

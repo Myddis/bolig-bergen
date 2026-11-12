@@ -873,7 +873,7 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
           ${b.nabolag && b.nabolag.dagligvare ? `<div><span>Nærmeste dagligvare</span><b>${esc(b.nabolag.dagligvare.navn)}, <span class="num">${esc(nf.format(b.nabolag.dagligvare.meter))} m</span></b></div>` : ""}
           ${b.nabolag && b.nabolag.trening ? `<div><span>Nærmeste treningssenter</span><b>${esc(b.nabolag.trening.navn)}, <span class="num">${esc(nf.format(b.nabolag.trening.meter))} m</span></b></div>` : ""}
           ${b.nabolag && b.nabolag.servering1km != null ? `<div><span>Kafeer og restauranter innen 1 km</span><b class="num">${esc(b.nabolag.servering1km)}</b></div>` : ""}
-          ${b.sol && b.sol.solscore != null ? `<div><span>Solscore (bakkenivå)</span><b class="num">${esc(b.sol.solscore)} av 100</b></div>` : ""}
+          ${b.sol && b.sol.solscore != null ? `<div><span>Solscore (bakkenivå)</span><b class="num">${esc(b.sol.solscore)} av 100</b>${b.sol.malepunkt && b.sol.malepunkt.toLowerCase() !== String(b.adresse || "").toLowerCase() ? `<span style="color:var(--muted);font-size:12px">målt ved ${esc(b.sol.malepunkt)}</span>` : ""}</div>` : ""}
           ${b.omgivelser ? [["stoy", "Støy"], ["natur", "Natur og tur"], ["utsikt", "Utsikt"], ["trafikk", "Trafikk"]].filter(([k]) => b.omgivelser[k]).map(([k, t]) => `<div><span>${t}</span><b>${esc(b.omgivelser[k])}</b></div>`).join("") : ""}
         </div>
         <div class="meta" style="color:var(--muted);font-size:12px">Tilgjengelighet (½ jobbreise, ¼ sentrum, ¼ kollektiv), sol og omgivelser teller en tredjedel hver av Beliggenhet. Gangavstander og solscore fra Eiendomssjekk.</div>

@@ -82,7 +82,10 @@ Tre like deler: `grunnlag = (tilgjengelighet + sol + omgivelser) / 3`. Lagre del
 - **Sentrum:** reisetid til sentrum (`pendling.sentrum`). `100 − 3 × (minutter − 10)`, mellom 30 og 100.
 - **Kollektiv:** 100 hvis Bybanen er under 700 m eller buss under 400 m å gå. 30 hvis begge er over 1 km. Ellers 60.
 
-**Sol.** Utgangspunkt er `sol.solscore` (0–100) fra `scripts/omrade.py`. Den er målt på bakkenivå, så juster:
+**Sol.** Utgangspunkt er `sol.solscore` (0–100) fra Eiendomssjekk (`scripts/omrade.py`). Den er målt på bakkenivå i ett målepunkt for hele eiendommen (`sol.malepunkt`).
+- **Usikker solscore:** ligger målepunktet ved en annen adresse enn boligen, og tomten er stor (over ca. 5 000 m² eller minst 5 adresser, typisk flere blokker), sier solscoren lite om akkurat denne boligen. Start da på 60 i stedet for solscoren, og bruk justeringene under. Skriv i begrunnelsen at solscoren er målt ved en annen bygning. Er målepunktet en naboadresse i samme bygg eller på en liten tomt, bruk solscoren som vanlig.
+
+Juster:
 - +10 for 4. etasje eller høyere, eller for en solrik uteplass mot sør eller vest. Gi bare +10 én gang.
 - −10 hvis uteplassen eller stuen vender mot nord, eller er beskrevet som skyggefull.
 - Mangler solscore, start på 50 og skriv det i `mangler`.

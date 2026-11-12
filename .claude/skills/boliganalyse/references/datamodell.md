@@ -98,7 +98,8 @@ Sikkerhetskopi i repoet (`data/leiligheter/<finnkode>.json`) tas bare når bruke
               "medianKrM2Leiligheter": 86291, "salg12mnd": 750, "vekst5aar": 5.2, "vekst12mnd": 7.8,
               "bergenVekst5aar": 7.1, "bergenVekst12mnd": 10.5 },
   "marked": { "avvikProsent": 3.3, "andelOver": 65, "dagerPaaMarkedet": 9, "grunnlagSalg": 297 },
-  "sol": { "solscore": 63, "timerJuni": 17.3, "timerDes": 4.8, "solvurdering": "Middels solforhold" },
+  "sol": { "solscore": 63, "timerJuni": 17.3, "timerDes": 4.8, "solvurdering": "Middels solforhold",
+           "malepunkt": "Helleveien 133", "adresserPaaEiendom": 3, "tomtM2": 1512 },   // målepunkt for solscoren (Eiendomssjekk)
   "kollektivFrekvens": { "stopp": "Buss, Eikeviken", "avstand": "1 min til fots (70 m)", "avgangerRushtid": 23 },
   "nabolag": { "dagligvare": { "navn": "Spar Eikeviken", "meter": 110 }, "trening": { "navn": "SATS Sandviken", "meter": 2900 },
                "servering1km": 6, "url": "https://eiendomssjekk.no/eiendom/4601-168-200/nabolag" },   // omrade.py → nabolag
