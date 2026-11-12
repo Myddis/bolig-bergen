@@ -426,6 +426,7 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
   const S = {
     boliger: new Map(),
     arbeid: [],
+    steder: [],
     sel: null,
     hover: null,
     sort: store.get("sort", "score"),
@@ -438,6 +439,8 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
   // ---------- hjelpere for data ----------
   const totalpris = (b) => b.totalpris ?? ((b.prisantydning ?? 0) + (b.omkostninger ?? 0) + (b.fellesgjeld ?? 0) || null);
   const krm2 = (b) => b.krPerM2 ?? (b.braI && totalpris(b) ? Math.round(totalpris(b) / b.braI) : null);
+  // Arbeidssteder (må-krav, markeres på kartet) og andre steder som bare vises til informasjon (sentrum).
+  const maal = () => [...S.arbeid, ...S.steder];
   const reise = (b, id) => {
     const p = b.pendling && b.pendling[id];
     if (!p) return null;
@@ -622,7 +625,7 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
       ["BRA-i", m2(b.braI)],
       ["Soverom", b.soverom ?? "–"],
       ["Kr/m²", krm2(b) ? nf.format(krm2(b)) : "–"],
-      ...S.arbeid.map((a) => [a.navn, fmtMin(reise(b, a.id))]),
+      ...maal().map((a) => [a.navn, fmtMin(reise(b, a.id))]),
       ...(b.sol && b.sol.solscore != null ? [["Solscore", b.sol.solscore + " av 100"]] : []),
     ];
     tip.innerHTML = `<h4>${esc(b.adresse || b.tittel || "Ukjent adresse")}</h4>
@@ -652,7 +655,7 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
       rows = r.map((c, i) => th.length >= i ? `<div class="row"><span class="sw" style="background:${c}"></span>${lab(i)}</div>` : "").join("");
       L.innerHTML = `<div class="t">Kr/m² (BRA-i)</div>${rows}`;
     } else {
-      const a = S.arbeid.find((x) => "reise:" + x.id === S.colorby);
+      const a = maal().find((x) => "reise:" + x.id === S.colorby);
       rows = [["--good", "20 min eller mindre"], ["--mid", "21–30 min"], ["--bad", "over 30 min"]]
         .map(([c, t]) => `<div class="row"><span class="sw" style="background:var(${c})"></span>${t}</div>`).join("");
       L.innerHTML = `<div class="t">Reisetid ${esc(a ? a.navn : "")}</div>${rows}<div class="src">Raskeste av kollektiv og gange</div>`;
@@ -664,7 +667,7 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
   // ---------- liste ----------
   function cardHTML(b) {
     const tg3 = (b.tg3 || []).length;
-    const comm = S.arbeid.map((a) => {
+    const comm = maal().map((a) => {
       const p = b.pendling && b.pendling[a.id];
       if (!p) return "";
       const m = reise(b, a.id);
@@ -775,7 +778,7 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
       ["Mnd. etter rentefradrag", kr(b.mndKostnadEtterFradrag)],
     ];
     const extras = [b.heis ? "Heis" : null, b.balkong ? "Balkong/terrasse" : null, b.parkering ? "Parkering: " + b.parkering : null].filter(Boolean);
-    const commRows = S.arbeid.map((a) => {
+    const commRows = maal().map((a) => {
       const p = (b.pendling || {})[a.id] || {};
       return `<tr><td><b>${esc(a.navn)}</b><div class="route">${esc(p.rute || "")}${p.bytter ? ` · ${p.bytter} bytte${p.bytter > 1 ? "r" : ""}` : ""}</div></td>
         <td class="r num">${fmtMin(p.kollektivMin)}</td><td class="r num">${fmtMin(p.gangMin)}</td><td class="r num">${fmtMin(p.sykkelMin)}</td></tr>`;
@@ -834,9 +837,9 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
         </div>` : ""}
         <div class="meta" style="color:var(--muted);font-size:12px">Sammenlignet med å fortsette å leie. Formue ved kjøp er etter restlån, fellesgjeld og salgskostnad. Prisvekst i strøket er årlig snitt fra tinglyste salg (Eiendomssjekk); Bergen fra SSB. ${esc(b.investering.antagelser || "")}</div>
       </section>` : ""}
-      ${S.arbeid.length ? `<section class="blk"><h3>Reisetid til jobb</h3>
+      ${maal().length ? `<section class="blk"><h3>Reisetid</h3>
         <div style="overflow-x:auto"><table class="commtab"><thead><tr><th></th><th class="r">Kollektiv</th><th class="r">Gange</th><th class="r">Sykkel</th></tr></thead><tbody>${commRows}</tbody></table></div>
-        <div class="meta" style="color:var(--muted);font-size:12px">Oppmøte kl. 08:00 en tirsdag, dør til dør. Kilde: Entur (Skyss-ruter).</div></section>` : ""}
+        <div class="meta" style="color:var(--muted);font-size:12px">Oppmøte kl. 08:00 en tirsdag, dør til dør. ${S.steder.length ? esc(S.steder.map((x) => x.navn + " = " + (x.adresse || "")).join(", ")) + ". " : ""}Kilde: Entur (Skyss-ruter).</div></section>` : ""}
       <section class="blk"><div class="cols2">
         <div><h3>Styrker</h3>${list(b.styrker)}</div>
         <div><h3>Svakheter</h3>${list(b.svakheter)}</div></div></section>
@@ -895,7 +898,7 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
     const cb = $("colorby"), so = $("sort");
     [...cb.querySelectorAll("[data-dyn]")].forEach((o) => o.remove());
     [...so.querySelectorAll("[data-dyn]")].forEach((o) => o.remove());
-    for (const a of S.arbeid) {
+    for (const a of maal()) {
       cb.insertAdjacentHTML("beforeend", `<option data-dyn value="reise:${esc(a.id)}">Reisetid ${esc(a.navn)}</option>`);
       so.insertAdjacentHTML("beforeend", `<option data-dyn value="reise:${esc(a.id)}">Reisetid ${esc(a.navn)}</option>`);
     }
@@ -1192,7 +1195,9 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
     const done = () => { clearTimeout(timer); timer = null; };
     db.doc("oppsett/arbeidssteder").onSnapshot((snap) => {
       const d = snap.exists ? snap.data() : null;
-      S.arbeid = (d && Array.isArray(d.liste) ? d.liste : []).filter((a) => typeof a.lat === "number" && typeof a.lon === "number");
+      const gyldig = (a) => typeof a.lat === "number" && typeof a.lon === "number";
+      S.arbeid = (d && Array.isArray(d.liste) ? d.liste : []).filter(gyldig);
+      S.steder = (d && Array.isArray(d.steder) ? d.steder : []).filter(gyldig);
       buildCommuteUI();
       renderAll();
     }, () => {});

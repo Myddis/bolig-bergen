@@ -77,7 +77,7 @@ Bruk bare som anslag, merket «anslag», og oppgi intervallet.
 - Hold resultatet mellom 10 og 100.
 
 ### Beliggenhet (`beliggenhet`)
-- Grunnlag: den **lengste** av de to reisetidene, der hver reisetid er det raskeste av kollektiv og gange.
+- Grunnlag: den **lengste** av de to reisetidene til jobb (Håkon og Camilla), der hver reisetid er det raskeste av kollektiv og gange. Reisetid til sentrum teller ikke.
 
   | Reisetid | Grunnlag |
   |---|---|

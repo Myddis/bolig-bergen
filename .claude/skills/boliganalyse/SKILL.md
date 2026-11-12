@@ -111,7 +111,7 @@ python3 scripts/geokod.py "<gateadresse>, <postnr>"
 python3 scripts/reisetid.py <lat> <lon>
 ```
 
-- Lagre hvert arbeidssted under `pendling.<id>` (`kollektivMin`, `bytter`, `rute`, `gangMin`, `gangKm`, `sykkelMin`).
+- Lagre hvert arbeidssted og hvert sted under `pendling.<id>` (`kollektivMin`, `bytter`, `rute`, `gangMin`, `gangKm`, `sykkelMin`). `pendling.sentrum` er bare til informasjon: den teller ikke i må-kravet om reisetid eller i beliggenhetsscoren.
 - Lagre `_bybane` som `bybane` og `_buss` som `buss` (`stopp`, `meter`, `gangMin`). `meter` er gangavstand.
 - Hopp over `_beregnet`. Feiler Entur, sett feltene til `null` og nevn det.
 
@@ -198,7 +198,7 @@ Brukes når oversikten har startet den planlagte oppgaven «Boligjakt: analysek�
 - **Endrede kriterier** (f.eks. ny rente, egenkapital eller prisvekst): for hver bolig, kjør `beregn.py` på dokumentet, sett kriterier- og investeringsscore og total score på nytt, og oppdater med `if_version`.
 - **Nye arbeidssteder:**
   1. Oppdater `config.json`.
-  2. Oppdater dokumentet `oppsett/arbeidssteder` i databasen (feltet `liste`, samme format).
+  2. Oppdater dokumentet `oppsett/arbeidssteder` i databasen: arbeidssteder i feltet `liste`, andre steder (sentrum) i feltet `steder`, samme format.
   3. Kjør reisetid på nytt for alle boligene.
 
 ## Regler

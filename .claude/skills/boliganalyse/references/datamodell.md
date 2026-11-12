@@ -77,10 +77,12 @@ Sikkerhetskopi i repoet (`data/leiligheter/<finnkode>.json`) tas bare når bruke
   "forkjopsrett": true,
   "egenerklaringMerknader": ["Vannskade på bad 2019, utbedret av rørlegger"],
 
-  // Reisetid (scripts/reisetid.py), én nøkkel per arbeidssted-id i config.json
+  // Reisetid (scripts/reisetid.py), én nøkkel per id under arbeidssteder og steder i config.json.
+  // «sentrum» (Byparken) er bare til informasjon, ikke må-krav eller beliggenhetsscore.
   "pendling": {
     "samboer": { "kollektivMin": 28, "bytter": 0, "rute": "Bybanen 1", "gangMin": 58, "gangKm": 4.3, "sykkelMin": 25 },
-    "meg":     { "kollektivMin": 12, "bytter": 0, "rute": "Buss 610", "gangMin": 25, "gangKm": 1.8, "sykkelMin": 14 }
+    "meg":     { "kollektivMin": 12, "bytter": 0, "rute": "Buss 610", "gangMin": 25, "gangKm": 1.8, "sykkelMin": 14 },
+    "sentrum": { "kollektivMin": 16, "bytter": 0, "rute": "Buss 12", "gangMin": 69, "gangKm": 4.9, "sykkelMin": 18 }
   },
 
   // Nærmeste Bybane-holdeplass (scripts/reisetid.py → _bybane)
@@ -149,4 +151,4 @@ Sikkerhetskopi i repoet (`data/leiligheter/<finnkode>.json`) tas bare når bruke
   }
   ```
 - Bolig-dokumentet får `vedlegg: [{id, navn, type}]` når det er analysert fra køen. Filene vises via `/_blob/<id>`.
-- `oppsett/arbeidssteder`: `{ "liste": [{ "id", "navn", "adresse", "lat", "lon" }] }`. Speiler `config.json`. Oversikten tegner arbeidsstedene og lager reisetidsfiltre fra dette dokumentet.
+- `oppsett/arbeidssteder`: `{ "liste": [{ "id", "navn", "adresse", "lat", "lon" }], "steder": [samme format] }`. Speiler `arbeidssteder` og `steder` i `config.json`. Stedene (sentrum) vises med reisetid i oversikten, men er ikke arbeidssteder. Oversikten tegner arbeidsstedene og lager reisetidsfiltre fra dette dokumentet.

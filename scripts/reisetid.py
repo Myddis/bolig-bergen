@@ -1,4 +1,4 @@
-"""Reisetid fra en bolig til arbeidsstedene i config.json, via Entur (dekker Skyss).
+"""Reisetid fra en bolig til arbeidsstedene og stedene (sentrum) i config.json, via Entur (dekker Skyss).
 
 Bruk:  python3 scripts/reisetid.py <lat> <lon>
 Ut:    JSON {"_bybane": {...}, "_buss": {...}, "<id>": {"navn", "adresse", "kollektivMin", "bytter", "rute", "gangKollektivMin",
@@ -71,7 +71,7 @@ def main(lat, lon):
     tid = neste_dag(cfg["reisetid"]["ukedag"], cfg["reisetid"]["ankomst"])
     fra = (lat, lon)
     ut = {}
-    for a in cfg["arbeidssteder"]:
+    for a in cfg["arbeidssteder"] + cfg.get("steder", []):
         til = (a["lat"], a["lon"])
         r = {"navn": a["navn"], "adresse": a["adresse"]}
         try:
