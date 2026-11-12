@@ -151,9 +151,9 @@ Mangler områdetall (feil fra Eiendomssjekk), gjør ett WebSearch-søk etter pri
    - `oppussingEstimat`: grovt anslag i kr. Bruk takstmannens tall der de finnes, ellers intervallene i `analyseregler.md`. Oppgi midtpunktet og skriv intervallet i teksten.
 
 ### 8. Lagre i oversikten
-- **Ny bolig:** `ArtifactData set` med `collection: "leiligheter"`, `doc_id: <finnkode>`, `file_path: <scratchpad>/<finnkode>.json`. Sett `status: "ny"`, `favoritt: false`, `notat: ""` og `lagtTil` til nåtid (ISO 8601).
+- **Ny bolig:** `ArtifactData set` med `collection: "leiligheter"`, `doc_id: <finnkode>`, `file_path: <scratchpad>/<finnkode>.json`. Sett `status: "tilsalgs"`, `favoritt: false`, `notat: ""` og `lagtTil` til nåtid (ISO 8601).
 - **Eksisterende bolig:** `ArtifactData update` med `if_version` fra lesingen i steg 1.
-  - Send ikke feltene `status`, `notat`, `favoritt` eller `lagtTil`. De eies av brukeren.
+  - Send ikke feltene `status`, `solgtDato`, `notat`, `favoritt` eller `lagtTil`. De eies av brukeren.
   - Ta dem bort fra JSON-filen før du sender den.
 - Hvis `artifactUrl` i `config.json` er tom: si fra og stopp.
 - Ikke commit eller push per analyse. Databasen er hovedlageret.
@@ -192,7 +192,7 @@ Brukes når oversikten har startet den planlagte oppgaven «Boligjakt: analysek�
   4. Lagre med `update` og `if_version`.
 - **«Oppdater reisetid for alle»:** list alle boligene, kjør `reisetid.py` for hver, og oppdater bare `pendling`, `bybane` og `buss` (med `if_version`). Gjør det samme etter endringer i `config.json`.
 - **«Sammenlign X og Y»:** les begge dokumentene og svar med en tabell og en anbefaling.
-- **«Fjern / marker som solgt»:** oppdater `status`, eller slett bare hvis brukeren ber om det eksplisitt.
+- **«Fjern / marker som solgt»:** sett `status: "solgt"` og `solgtDato` (fra `date -u`), eller slett bare hvis brukeren ber om det eksplisitt.
 - **«Ta sikkerhetskopi»:** list alle dokumentene med `ArtifactData list` og `out_dir: data/`. Commit `data/leiligheter/` og push.
 - **Endrede kriterier** (f.eks. ny rente, egenkapital eller prisvekst): for hver bolig, kjør `beregn.py` på dokumentet, sett kriterier- og investeringsscore og total score på nytt, og oppdater med `if_version`.
 - **Nye arbeidssteder:**

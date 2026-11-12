@@ -125,7 +125,8 @@ Sikkerhetskopi i repoet (`data/leiligheter/<finnkode>.json`) tas bare når bruke
   "mangler": ["Energimerke ikke oppgitt"],
 
   // Brukerens felt: settes bare ved første lagring, ellers aldri
-  "status": "ny",                                // ny | interessert | visning | bud | avvist | solgt
+  "status": "tilsalgs",                          // tilsalgs | solgt (eldre verdier som «ny» regnes som til salgs)
+  "solgtDato": null,                             // settes av oversikten når boligen markeres som solgt
   "favoritt": false,
   "notat": ""
 }

@@ -256,6 +256,7 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
 @keyframes pulse { 0%, 100% { opacity: .25 } 50% { opacity: 1 } }
 .fallback { margin: 8px 16px 12px; padding: 10px 12px; border: 1px dashed var(--line); border-radius: 8px; background: var(--surface-2); font-size: 13px; display: grid; gap: 6px; }
 .fallback code { font-family: var(--f-mono); font-size: 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 4px; padding: 2px 6px; user-select: all; }
+[hidden] { display: none !important; }
 .modal-back { position: fixed; inset: 0; z-index: 60; background: rgb(10 20 26 / .45); display: grid; place-items: center;
   padding-block: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-bottom, 0px));
   padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
@@ -333,13 +334,10 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
           <select id="eie"><option value="">Alle</option><option>Selveier</option><option>Andel</option><option>Aksje</option></select></div>
         <div class="f"><label for="status">Status</label>
           <select id="status">
-            <option value="aktive">Aktive</option><option value="">Alle</option>
-            <option value="ny">Ny</option><option value="interessert">Interessert</option><option value="visning">Visning</option>
-            <option value="bud">Bud</option><option value="avvist">Avvist</option><option value="solgt">Solgt</option>
+            <option value="tilsalgs">Til salgs</option><option value="solgt">Solgt</option>
           </select></div>
         <div class="f"><label for="smin">Score</label>
           <select id="smin"><option value="0">Alle</option><option>50</option><option>60</option><option>70</option><option>80</option></select></div>
-        <div class="f" id="commutefilters"></div>
         <label class="chk" for="notg3"><input type="checkbox" id="notg3"> Uten TG3</label>
         <label class="chk" for="favonly"><input type="checkbox" id="favonly"> Bare favoritter</label>
         <button type="button" class="linkbtn" id="reset">Nullstill</button>
@@ -402,7 +400,8 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
 (() => {
   "use strict";
   const BYDELER = ["Arna", "Bergenhus", "Fana", "Fyllingsdalen", "Laksevåg", "Ytrebygda", "Årstad", "Åsane"];
-  const STATUSER = { ny: "Ny", interessert: "Interessert", visning: "Visning", bud: "Bud", avvist: "Avvist", solgt: "Solgt" };
+  // Bare «solgt» regnes som solgt. Alt annet (også eldre verdier som «ny», «bud») er til salgs.
+  const erSolgt = (b) => b.status === "solgt";
   const DELSCORER = [["pris", "Pris"], ["tilstand", "Tilstand"], ["okonomi", "Økonomi i laget"], ["beliggenhet", "Beliggenhet"], ["kriterier", "Mine kriterier"], ["investering", "Investering"]];
   const $ = (id) => document.getElementById(id);
   const nf = new Intl.NumberFormat("nb-NO");
@@ -417,6 +416,13 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
   };
 
   // ---------- tilstand ----------
+  const tomtFilter = () => ({ bydeler: [], pmin: "", pmax: "", sov: "0", bra: "0", eie: "", status: "tilsalgs", smin: "0", notg3: false, favonly: false });
+  function lagretFilter() {
+    const f = Object.assign(tomtFilter(), store.get("filter", {}));
+    delete f.maks;
+    if (f.status !== "solgt") f.status = "tilsalgs";
+    return f;
+  }
   const S = {
     boliger: new Map(),
     arbeid: [],
@@ -424,7 +430,7 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
     hover: null,
     sort: store.get("sort", "score"),
     colorby: store.get("colorby", "score"),
-    f: Object.assign({ bydeler: [], pmin: "", pmax: "", sov: "0", bra: "0", eie: "", status: "aktive", smin: "0", notg3: false, favonly: false, maks: {} }, store.get("filter", {})),
+    f: lagretFilter(),
     db: null,
     loaded: false,
   };
@@ -447,7 +453,7 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
     if (S.colorby.startsWith("reise:")) return minColor(reise(b, S.colorby.slice(6)));
     return css("--none");
   }
-  const faded = (b) => b.status === "avvist" || b.status === "solgt";
+  const faded = erSolgt;
 
   function passes(b) {
     const f = S.f;
@@ -458,17 +464,10 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
     if (+f.sov && (b.soverom ?? 0) < +f.sov) return false;
     if (+f.bra && (b.braI ?? 0) < +f.bra) return false;
     if (f.eie && b.eieform !== f.eie) return false;
-    const st = b.status || "ny";
-    if (f.status === "aktive" && (st === "avvist" || st === "solgt")) return false;
-    if (f.status && f.status !== "aktive" && st !== f.status) return false;
+    if ((f.status === "solgt") !== erSolgt(b)) return false;
     if (+f.smin && (b.score ?? 0) < +f.smin) return false;
     if (f.notg3 && (b.tg3 || []).length) return false;
     if (f.favonly && !b.favoritt) return false;
-    for (const [id, maks] of Object.entries(f.maks || {})) {
-      if (!+maks) continue;
-      const r = reise(b, id);
-      if (r == null || r > +maks) return false;
-    }
     return true;
   }
   function visible() {
@@ -664,7 +663,6 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
 
   // ---------- liste ----------
   function cardHTML(b) {
-    const st = b.status || "ny";
     const tg3 = (b.tg3 || []).length;
     const comm = S.arbeid.map((a) => {
       const p = b.pendling && b.pendling[a.id];
@@ -675,7 +673,7 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
     return `<button type="button" class="card${faded(b) ? " fade" : ""}${S.hover === b.id ? " hl" : ""}" data-id="${esc(b.id)}">
       <span class="adr">${b.favoritt ? '<span class="fav" aria-label="Favoritt">★</span> ' : ""}${esc(b.adresse || b.tittel || "Ukjent adresse")}</span>
       <span>${b.score != null ? `<span class="pill score" style="background:${scoreColor(b.score)}">${b.forelopig ? "~" : ""}${b.score}</span>` : `<span class="pill soft">${b.forelopig ? "Foreløpig" : "Ikke analysert"}</span>`}</span>
-      <span class="sub">${esc(b.bydel || "Ukjent bydel")}${b.eieform ? " · " + esc(b.eieform) : ""}${st !== "ny" ? ` · <span class="pill status">${esc(STATUSER[st] || st)}</span>` : ""}${tg3 ? ` · <span class="pill warn">${tg3}× TG3</span>` : ""}${b.forelopig ? ` · <span class="pill pre">Foreløpig</span>` : ""}${b.budForBudsjett ? ` · <span class="pill warn">Over budsjett</span>` : ""}</span>
+      <span class="sub">${esc(b.bydel || "Ukjent bydel")}${b.eieform ? " · " + esc(b.eieform) : ""}${erSolgt(b) ? ` · <span class="pill status">Solgt</span>` : ""}${tg3 ? ` · <span class="pill warn">${tg3}× TG3</span>` : ""}${b.forelopig ? ` · <span class="pill pre">Foreløpig</span>` : ""}${b.budForBudsjett ? ` · <span class="pill warn">Over budsjett</span>` : ""}</span>
       <span class="facts"><span class="num">${mill(totalpris(b))}</span><span class="num">${m2(b.braI)}</span><span>${b.soverom ?? "–"} sov.</span><span class="num">${krm2(b) ? nf.format(krm2(b)) + " kr/m²" : ""}</span></span>
       ${comm ? `<span class="commute">${comm}</span>` : ""}
     </button>`;
@@ -791,17 +789,16 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
       ["Fellesgjeld totalt", bl.fellesgjeldTotal != null ? kr(bl.fellesgjeldTotal) : null],
       ["Avdragsfritt til", bl.avdragsfriTil], ["Forretningsfører", bl.forretningsforer],
     ].filter(([, v]) => v != null && v !== "");
-    const statusOpts = Object.entries(STATUSER).map(([v, t]) => `<option value="${v}"${(b.status || "ny") === v ? " selected" : ""}>${t}</option>`).join("");
     return `<div class="detail" data-id="${esc(b.id)}">
       <div class="dhead">
         <button type="button" class="linkbtn back" data-close>← Tilbake til listen</button>
-        <h2>${esc(b.adresse || b.tittel || "Ukjent adresse")}</h2>
+        <h2>${esc(b.adresse || b.tittel || "Ukjent adresse")}${erSolgt(b) ? ` <span class="pill status">Solgt${b.solgtDato ? " " + esc(new Date(b.solgtDato).toLocaleDateString("nb-NO")) : ""}</span>` : ""}</h2>
         <div class="meta">${esc([b.bydel, b.postnr, b.boligtype].filter(Boolean).join(" · "))}</div>
         ${b.tittel && b.tittel !== b.adresse ? `<div class="meta">«${esc(b.tittel)}»</div>` : ""}
         <div class="actions">
           ${b.url ? `<a class="btn primary" href="${esc(b.url)}" target="_blank" rel="noopener">Åpne på Finn ↗</a>` : ""}
           <button type="button" class="btn" data-fav aria-pressed="${b.favoritt ? "true" : "false"}">${b.favoritt ? "★ Favoritt" : "☆ Favoritt"}</button>
-          <label class="chk" for="dstatus">Status <select id="dstatus" data-status>${statusOpts}</select></label>
+          <button type="button" class="btn" data-solgt aria-pressed="${erSolgt(b) ? "true" : "false"}">${erSolgt(b) ? "Merk som til salgs" : "Marker som solgt"}</button>
         </div>
       </div>
       ${b.forelopig ? `<section class="blk preblk"><h3>Foreløpig analyse</h3>
@@ -876,9 +873,11 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
     const fav = root.querySelector("[data-fav]");
     fav.disabled = !canWrite;
     fav.onclick = () => write({ favoritt: !b.favoritt }, "Lagret");
-    const st = root.querySelector("[data-status]");
-    st.disabled = !canWrite;
-    st.onchange = () => write({ status: st.value }, "Status lagret");
+    const sb = root.querySelector("[data-solgt]");
+    sb.disabled = !canWrite;
+    sb.onclick = () => erSolgt(b)
+      ? write({ status: "tilsalgs", solgtDato: null }, "Merket som til salgs")
+      : write({ status: "solgt", solgtDato: new Date().toISOString() }, "Merket som solgt. Den vises under Status: Solgt.");
     const n = root.querySelector("[data-notat]");
     n.disabled = !canWrite;
     n.oninput = () => { if (saved) saved.textContent = "Skriver …"; clearTimeout(notatTimer); notatTimer = setTimeout(() => write({ notat: n.value }, "Notat lagret"), 900); };
@@ -893,8 +892,6 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
     updateBydelSum();
   }
   function buildCommuteUI() {
-    $("commutefilters").innerHTML = S.arbeid.map((a) => `<label for="maks-${esc(a.id)}">${esc(a.navn)}</label>
-      <select id="maks-${esc(a.id)}" data-maks="${esc(a.id)}"><option value="0">Alle</option>${[10, 15, 20, 25, 30, 40, 45].map((m) => `<option value="${m}"${+(S.f.maks || {})[a.id] === m ? " selected" : ""}>≤ ${m} min</option>`).join("")}</select>`).join("");
     const cb = $("colorby"), so = $("sort");
     [...cb.querySelectorAll("[data-dyn]")].forEach((o) => o.remove());
     [...so.querySelectorAll("[data-dyn]")].forEach((o) => o.remove());
@@ -908,13 +905,12 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
   function updateBydelSum() {
     const n = S.f.bydeler.length;
     $("bydelsum").textContent = !n ? "Alle bydeler" : n === 1 ? S.f.bydeler[0] : `${n} bydeler`;
-    const active = [n > 0, S.f.pmin !== "", S.f.pmax !== "", +S.f.sov, +S.f.bra, S.f.eie, S.f.status !== "aktive", +S.f.smin, S.f.notg3, S.f.favonly, ...Object.values(S.f.maks || {}).map(Number)].filter(Boolean).length;
+    const active = [n > 0, S.f.pmin !== "", S.f.pmax !== "", +S.f.sov, +S.f.bra, S.f.eie, S.f.status !== "tilsalgs", +S.f.smin, S.f.notg3, S.f.favonly].filter(Boolean).length;
     $("fcount").textContent = active ? `(${active})` : "";
   }
   $("filters").addEventListener("input", (e) => {
     const t = e.target;
     if (t.closest("#bydelopts")) S.f.bydeler = [...$("bydelopts").querySelectorAll("input:checked")].map((x) => x.value);
-    else if (t.dataset.maks) { S.f.maks = Object.assign({}, S.f.maks, { [t.dataset.maks]: t.value }); }
     else if (t.id === "notg3" || t.id === "favonly") S.f[t.id] = t.checked;
     else if (t.id in S.f) S.f[t.id] = t.value;
     store.set("filter", S.f);
@@ -924,7 +920,7 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
   $("filters").addEventListener("submit", (e) => e.preventDefault());
   document.addEventListener("click", (e) => { const p = $("bydelpop"); if (p.open && !p.contains(e.target)) p.open = false; });
   function resetFilters() {
-    S.f = { bydeler: [], pmin: "", pmax: "", sov: "0", bra: "0", eie: "", status: "aktive", smin: "0", notg3: false, favonly: false, maks: {} };
+    S.f = tomtFilter();
     store.set("filter", S.f); buildFilterUI(); buildCommuteUI(); renderAll();
   }
   $("reset").onclick = resetFilters;

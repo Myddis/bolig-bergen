@@ -10,7 +10,7 @@ Analyse av leiligheter i Bergen fra Finn-annonser og salgsoppgaver, med kartover
    - leser salgsoppgaven og tilstandsrapporten
    - regner ut nøkkeltall og reisetid til jobb
    - setter en score og legger boligen inn i [oversikten](https://claude.ai/artifact/PSuhmmL6pbLh7nYsgSyQZ2)
-4. I oversikten kan du filtrere, sette status (interessert, visning, bud …), markere favoritter og skrive notater.
+4. I oversikten kan du filtrere, markere boliger som solgt, markere favoritter og skrive notater.
 
 ## Tilpass
 - **Kriterier, budsjett og vekter:** `.claude/skills/boliganalyse/references/kriterier.md`
