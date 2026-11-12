@@ -384,7 +384,7 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
       <div class="drops">
         <div class="drop" id="dropimg"><b>Skjermbilde</b><span>av Finn-annonsen med pris, fellesgjeld og felleskost.</span><span class="dz">Slipp bilde her eller trykk</span>
           <input type="file" id="fileimg" accept="image/png,image/jpeg,image/webp" multiple aria-label="Velg skjermbilde av annonsen"></div>
-        <div class="drop" id="droppdf"><b>Salgsoppgave (PDF)</b><span>full salgsoppgave, eller tilstandsrapport</span><span class="dz">Slipp PDF her eller trykk</span>
+        <div class="drop" id="droppdf"><b>Salgsoppgave (PDF)</b><span>full salgsoppgave, eller tilstandsrapport. Over 19 MB deles den automatisk.</span><span class="dz">Slipp PDF her eller trykk</span>
           <input type="file" id="filepdf" accept="application/pdf" multiple aria-label="Velg salgsoppgave som PDF"></div>
       </div>
       <ul class="filelist" id="filelist"></ul>
@@ -972,6 +972,53 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
     return new Date(iso).toLocaleDateString("nb-NO", { day: "numeric", month: "short" });
   };
 
+  // Fillagringen tar maks 20 MiB per fil. Større PDF-er deles etter sider i nettleseren,
+  // og analysen setter delene sammen igjen med pdfunite (sidetallene blir som i originalen).
+  const GRENSE = 19 * 1048576, MAKS_PDF = 300 * 1048576;
+  let pdfLib = null;
+  function lastPdfLib() {
+    if (window.PDFLib) return Promise.resolve(window.PDFLib);
+    return pdfLib || (pdfLib = new Promise((ok, nei) => {
+      const sc = document.createElement("script");
+      sc.src = "https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js";
+      sc.onload = () => window.PDFLib ? ok(window.PDFLib) : nei(new Error("pdf-lib"));
+      sc.onerror = () => { pdfLib = null; nei(new Error("pdf-lib")); };
+      document.head.append(sc);
+    }));
+  }
+  async function delPdf(f, vis) {
+    const { PDFDocument } = await lastPdfLib();
+    vis(`Leser ${f.name} …`);
+    const kilde = await PDFDocument.load(await f.arrayBuffer(), { ignoreEncryption: true, updateMetadata: false });
+    const n = kilde.getPageCount();
+    const antall = Math.max(2, Math.ceil(f.size / (14 * 1048576)));
+    const steg = Math.ceil(n / antall);
+    const ko = [];
+    for (let a = 0; a < n; a += steg) ko.push([a, Math.min(n, a + steg) - 1]);
+    const deler = [];
+    while (ko.length) {
+      const [a, b] = ko.shift();
+      vis(`Deler ${f.name}: side ${a + 1}–${b + 1} av ${n} …`);
+      const d = await PDFDocument.create();
+      const sider = await d.copyPages(kilde, Array.from({ length: b - a + 1 }, (_, i) => a + i));
+      sider.forEach((pg) => d.addPage(pg));
+      const bytes = await d.save();
+      if (bytes.length > GRENSE) {
+        if (a === b) throw Object.assign(new Error("side"), { code: "side_for_stor", side: a + 1 });
+        const m = Math.floor((a + b) / 2);
+        ko.unshift([a, m], [m + 1, b]);
+        continue;
+      }
+      deler.push({ bytes, fra: a + 1, til: b + 1 });
+    }
+    const base = f.name.replace(/\.pdf$/i, "");
+    return deler.map((d, i) => ({
+      blob: new Blob([d.bytes], { type: "application/pdf" }), type: "application/pdf",
+      navn: `${base} – del ${i + 1} av ${deler.length} (s. ${d.fra}–${d.til}).pdf`,
+      meta: { original: f.name, del: i + 1, av: deler.length, fraSide: d.fra, tilSide: d.til },
+    }));
+  }
+
   function renderFiler() {
     const ul = $("filelist");
     const alle = [...ny.img.map((f, i) => ["img", i, f]), ...ny.pdf.map((f, i) => ["pdf", i, f])];
@@ -984,7 +1031,7 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
     for (const f of files) {
       const erPdf = f.type === "application/pdf" || /\.pdf$/i.test(f.name);
       const erBilde = /^image\/(png|jpeg|webp)$/.test(f.type) || /\.(png|jpe?g|webp)$/i.test(f.name);
-      if (f.size > 20 * 1048576) { msg.className = "formmsg err"; msg.textContent = `${f.name} er større enn 20 MB.`; continue; }
+      if (f.size > (erPdf ? MAKS_PDF : GRENSE)) { msg.className = "formmsg err"; msg.textContent = erPdf ? `${f.name} er større enn 300 MB.` : `${f.name} er større enn 19 MB. Ta et nytt skjermbilde eller lagre det som JPG.`; continue; }
       if (erPdf && hint !== "img") ny.pdf.push(f);
       else if (erBilde && hint !== "pdf") ny.img.push(f);
       else { msg.className = "formmsg err"; msg.textContent = `${f.name}: bruk PNG, JPG eller WebP for skjermbilder og PDF for salgsoppgaven.`; }
@@ -1020,19 +1067,32 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
     if (!ny.pdf.length) return feil("Legg ved salgsoppgaven eller tilstandsrapporten som PDF.");
     if (!S.assets || !S.db) return feil("Opplasting er ikke tilgjengelig i denne visningen.");
     knapp.disabled = true; msg.className = "formmsg";
-    const filer = [], alle = [...ny.img, ...ny.pdf];
+    const filer = [], alle = [];
+    const typeFor = (f) => f.type || (/\.pdf$/i.test(f.name) ? "application/pdf" : /\.png$/i.test(f.name) ? "image/png" : /\.webp$/i.test(f.name) ? "image/webp" : "image/jpeg");
+    try {
+      for (const f of [...ny.img, ...ny.pdf]) {
+        if (f.size > GRENSE && typeFor(f) === "application/pdf") alle.push(...await delPdf(f, (t) => { msg.textContent = t; }));
+        else alle.push({ blob: f, type: typeFor(f), navn: f.name });
+      }
+    } catch (err) {
+      knapp.disabled = false;
+      return feil(err && err.code === "side_for_stor"
+        ? `Side ${err.side} i PDF-en er alene større enn 19 MB, så den kan ikke deles automatisk. Lagre PDF-en i redusert størrelse og prøv igjen.`
+        : err && err.message === "pdf-lib"
+        ? "Fikk ikke lastet verktøyet som deler store PDF-er. Sjekk nettforbindelsen og prøv igjen."
+        : "Klarte ikke å dele PDF-en (den kan være passordbeskyttet eller skadet). Del den i filer under 19 MB og legg ved alle.");
+    }
     try {
       for (let i = 0; i < alle.length; i++) {
         const f = alle[i];
-        msg.textContent = `Laster opp ${i + 1} av ${alle.length}: ${f.name} …`;
-        const type = f.type || (/\.pdf$/i.test(f.name) ? "application/pdf" : /\.png$/i.test(f.name) ? "image/png" : /\.webp$/i.test(f.name) ? "image/webp" : "image/jpeg");
-        const r = await S.assets.upload(f, { type });
-        filer.push({ id: r.id, navn: f.name, type: r.contentType || type });
+        msg.textContent = `Laster opp ${i + 1} av ${alle.length}: ${f.navn} …`;
+        const r = await S.assets.upload(f.blob, { type: f.type });
+        filer.push(Object.assign({ id: r.id, navn: f.navn, type: r.contentType || f.type }, f.meta || {}));
       }
     } catch (err) {
       knapp.disabled = false;
       const c = err && err.code;
-      return feil(c === "too_large" ? "En av filene er for stor (maks 20 MB)." : c === "unsupported_type" ? "En av filene har et format som ikke støttes." : c === "quota_or_state" ? "Lagringsplassen til oversikten er full." : "Opplastingen feilet. Prøv igjen.");
+      return feil(c === "too_large" ? "En av filene er for stor (maks 20 MB)." : c === "unsupported_type" ? "En av filene har et format som ikke støttes." : c === "quota_or_state" ? "Lagringsplassen til oversikten er full. Fjern gamle vedlegg eller be Claude rydde." : "Opplastingen feilet. Prøv igjen.");
     }
     const jobbId = "j" + Date.now().toString(36);
     msg.textContent = "Legger jobben i køen …";

@@ -140,6 +140,8 @@ Sikkerhetskopi i repoet (`data/leiligheter/<finnkode>.json`) tas bare når bruke
     "finnkode": "480597898",
     "filer": [{ "id": "<asset-id>", "navn": "annonse.png", "type": "image/png" },
               { "id": "<asset-id>", "navn": "salgsoppgave.pdf", "type": "application/pdf" }],
+               // PDF over 19 MB deles i oversikten. Hver del har i tillegg
+               // "original": "salgsoppgave.pdf", "del": 1, "av": 3, "fraSide": 1, "tilSide": 13
     "status": "venter",        // venter | analyserer | ferdig | feilet
     "opprettet": "2026-11-12T10:00:00Z", "startet": null, "ferdig": null,
     "melding": "",             // fremdrift, eller hva som gikk galt

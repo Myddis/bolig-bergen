@@ -176,6 +176,7 @@ Brukes når oversikten har startet den planlagte oppgaven «Boligjakt: analysek�
 2. **For hver jobb**, eldste først:
    1. **Merk jobben:** `ArtifactData update` med `if_version`: `status: "analyserer"`, `startet` satt til nåtid, `melding: "Leser vedlegg"`.
    2. **Last ned vedleggene:** for hver fil i `filer` (`{id, navn, type}`): `Artifact` med `action: "read"`, `url` = artifactUrl og `path` = filens `id`. Resultatet sier hvor filen ble lagret lokalt. Bilder er skjermbilder av Finn-annonsen. PDF-er er salgsoppgave eller tilstandsrapport.
+      - **Delt PDF:** oversikten deler PDF-er over 19 MB etter sider. Slike filer har `original`, `del`, `av`, `fraSide` og `tilSide`. Last ned alle delene, og slå sammen filene med samme `original` i rekkefølge etter `del`: `pdfunite del1.pdf del2.pdf … <scratchpad>/<original>`. Sjekk med `pdfinfo` at sidetallet stemmer med siste `tilSide`. Les deretter den sammenslåtte filen, så sidetallene («PDF s. X») blir som i originalen. Mangler en del, merk analysen som foreløpig og skriv hvilke sider som mangler i `mangler`.
    3. **Kjør arbeidsflyten over** (steg 1–8) med `finnUrl` fra jobben og de nedlastede filene.
       - Mangler pris eller økonomi: bruk foreløpig modus i stedet for å spørre.
       - Oppdater `melding` underveis på naturlige punkter («Leser salgsoppgaven», «Henter områdedata», «Lagrer»), med `if_version`.
