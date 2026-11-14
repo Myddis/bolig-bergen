@@ -422,7 +422,7 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
   const erSolgt = (b) => b.status === "solgt";
   // Boligscore (references/boligscore.md): ni kategorier, karakter 0–10, poeng = karakter / 10 × vekt
   const KATEGORIER = [["beliggenhet", "Beliggenhet og mikrolokasjon", 18], ["kjopspris", "Kjøpspris og markedsverdi", 17], ["videresalg", "Videresalgspotensial", 15],
-    ["teknisk", "Teknisk tilstand og risiko", 14], ["oppgradering", "Oppgraderings- og verdipotensial", 12], ["planlosning", "Planløsning og areal", 8],
+    ["teknisk", "Teknisk tilstand og risiko", 14], ["oppgradering", "Oppussingsbehov (lite er bra)", 12], ["planlosning", "Planløsning og areal", 8],
     ["fellesokonomi", "Sameie/borettslag og fellesøkonomi", 6], ["trivsel", "Egen trivsel og bokvalitet", 5], ["lopende", "Løpende kostnader", 5]];
   const RISIKO = { lav: "Lav risiko", middels: "Middels risiko", hoy: "Høy risiko" };
   const tolkning = (s) => s == null ? "" : s >= 90 ? "Eksepsjonelt attraktivt" : s >= 80 ? "Svært attraktivt" : s >= 70 ? "Godt potensial" : s >= 60 ? "Flere kompromisser" : s >= 50 ? "Svakt objekt" : "Lite attraktivt";

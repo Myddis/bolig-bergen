@@ -34,7 +34,7 @@ Fra `boligscore.md`. Dette er en profil, ikke absolutte krav: ingenting gir tak 
 - **Beliggenhet:** sentrumsnær, med godt kollektivtilbud og kort vei til daglige tilbud. Reisetid til jobb for Håkon og Camilla teller i Beliggenhet. Over 30 min for en av dem er et rødt flagg.
 - **Størrelse:** ca. 45–75 m² BRA-i.
 - **Soverom:** helst to. En god toroms (ett soverom), gjerne med kontor, kan også være aktuell.
-- **Standard:** gjerne eldre kjøkken eller overflater som kan moderniseres, men et forsvarlig teknisk utgangspunkt. Badet bør helst ha dokumentert god tilstand. Mer enn én større jobb de neste 5 årene er et rødt flagg.
+- **Standard (Håkon og Camilla, går foran dokumentets søkeprofil):** innflyttingsklar, eller bare mindre oppgaver: maling, gulv, kjøkkenfronter og benkeplate, ny baderomsinnredning og små utbedringer. Større jobber er nytt bad, nytt kjøkken, rør, el-anlegg og vinduer. Helst ingen, høyst én de neste 5 årene. Mer enn én er et rødt flagg. Et utdatert kjøkken eller bad er ikke et pluss.
 - **Ellers et pluss:** balkong eller terrasse, gode lysforhold og lite innsyn, fornuftige energikostnader (energimerke A/B gir grønt boliglån), heis fra 3. etasje, parkering eller sykkelbod.
 - **BOB-medlemmer:** Håkon og Camilla er medlemmer i BOB. BOB-forkjøpsrett er et grønt flagg. Forkjøpsrett for andre boligbyggelag er et rødt flagg.
 - **Månedskostnad:** over 28 000 kr før rentefradrag (`maksMndKostnad`) er et rødt flagg og gir lav karakter i Løpende kostnader.

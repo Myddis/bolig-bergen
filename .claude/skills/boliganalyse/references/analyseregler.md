@@ -68,7 +68,7 @@ Lagre i `kategorier.<navn>` som `{karakter, poeng, grunnlag}`, og begrunn hver k
 | `kjopspris` | Kjøpspris og markedsverdi | 17 |
 | `videresalg` | Videresalgspotensial | 15 |
 | `teknisk` | Teknisk tilstand og risiko | 14 |
-| `oppgradering` | Oppgraderings- og verdipotensial | 12 |
+| `oppgradering` | Oppussingsbehov (dokumentets «Oppgraderings- og verdipotensial», tilpasset dere) | 12 |
 | `planlosning` | Planløsning og areal | 8 |
 | `fellesokonomi` | Sameie/borettslag og fellesøkonomi | 6 |
 | `trivsel` | Egen trivsel og bokvalitet | 5 |
@@ -144,24 +144,23 @@ Har strøket få salg (under ca. 100 siste 12 mnd), skriv at veksttallet er usik
 - Trekk 5–10 hvis våtrom er over 20 år, og 5 hvis el-anlegget er over 30 år.
 - Laveste verdi er 5.
 
-### Oppgraderings- og verdipotensial (`oppgradering`, 12)
-Kan kostnadseffektive forbedringer gjøre boligen bedre å bo i og lettere å selge? Se `boligscore.md`, avsnitt 6.
+### Oppussingsbehov (`oppgradering`, 12)
+Hvor mye som må gjøres for at boligen skal passe Håkon og Camilla, som vil ha den innflyttingsklar eller bare med mindre oppgaver (se `kriterier.md`). Lite å gjøre gir høy karakter. Et utdatert kjøkken eller bad gir ikke pluss.
 
 | Situasjon | Grunnlag |
 |---|---|
-| Eldre kjøkken, overflater eller gulv som kan moderniseres kosmetisk, og prisen gjenspeiler dagens standard | 90–100 |
-| Uutnyttet areal (loft, bod) som kan tas i bruk uten store inngrep | 80 |
-| Innflyttingsklar, lite å hente | 50 |
-| Vedlikehold som bare bevarer verdien (rør, vinduer, ventilasjon, el, fasade) | 40 |
-| Totalrehabilitering av bad, rør eller el, fukt, eller inngrep i konstruksjon | 20–30 |
-| Nylig oppusset av selger og priset deretter | 20 |
+| Innflyttingsklar: ingen tiltak over ca. 30 000 kr (også når selger nettopp har pusset opp; prisen vurderes i Kjøpspris) | 85 |
+| Bare mindre oppgaver: maling, gulv, kjøkkenfronter og benkeplate, ny baderomsinnredning, el-kontroll, små TG2-utbedringer | 75 |
+| Verdibevarende vedlikehold som andelseier må ta, med moderat beløp (vinduer, utbedring av el-avvik, vaskerom) | 55 |
+| Én større jobb: nytt bad, nytt kjøkken, rør eller el-anlegg | 30 |
+| Flere større jobber, eller fukt og konstruksjonsfeil | 10 |
 
-- Juster +10 hvis `krPerM2` er mer enn 10 % under `omrade.medianKrM2Leiligheter`, og −10 hvis den er mer enn 10 % over.
-- Sett `verdiokningOppussing` (kr) etter disse tommelfingerreglene, merket som anslag:
+- Kvadratmeterprisen vurderes ikke her, men i Kjøpspris.
+- `oppussingEstimat` skal alltid ta med det som realistisk må gjøres med kjøkken og bad, også mindre oppgaver. Skill mellom mindre oppgaver og større jobber i begrunnelsen.
+- Sett `verdiokningOppussing` (kr) etter tommelfingerreglene under, merket som anslag. Det brukes bare i resultat ved salg:
   - overflater (maling, gulv): ca. 1–1,5 × kostnaden
   - nytt kjøkken eller bad der det gamle er utdatert: ca. 0,5–1 × kostnaden
   - verdibevarende tiltak: ca. 0
-- Ikke regn med at en oppussing gir like mye i verdi som den koster.
 
 ### Planløsning og areal (`planlosning`, 8)
 Start på 50.
