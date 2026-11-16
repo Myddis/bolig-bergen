@@ -167,7 +167,12 @@ details.pop[open] > summary { border-color: var(--accent); }
 
 /* Sidepanel */
 aside.side { border-left: 1px solid var(--line); background: var(--surface); min-height: 0; display: grid; grid-template-rows: auto 1fr; min-width: 0; }
-.sidehead { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+.sidehead { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+.sidehead .sok { flex: 1 1 100%; position: relative; }
+.sidehead .sok input { width: 100%; box-sizing: border-box; font: inherit; font-size: 14px; padding: 7px 30px 7px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-2); color: var(--ink); }
+.sidehead .sok input:focus { outline: 2px solid var(--accent); outline-offset: -1px; background: var(--surface); }
+.sidehead .sok input::-webkit-search-cancel-button { display: none; }
+.sidehead .sok button { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); border: 0; background: none; color: var(--muted); font-size: 18px; line-height: 1; padding: 2px 6px; cursor: pointer; }
 .sidehead h2 { font-family: var(--f-display); font-size: 16px; margin: 0; font-weight: 700; }
 .sidehead .count { color: var(--muted); font-size: 13px; }
 .sidehead .spacer { flex: 1; }
@@ -352,7 +357,7 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
           <select id="eie"><option value="">Alle</option><option>Selveier</option><option>Andel</option><option>Aksje</option></select></div>
         <div class="f"><label for="status">Status</label>
           <select id="status">
-            <option value="tilsalgs">Til salgs</option><option value="solgt">Solgt</option>
+            <option value="tilsalgs">Til salgs</option><option value="solgt">Solgt</option><option value="alle">Alle</option>
           </select></div>
         <div class="f"><label for="smin">Score</label>
           <select id="smin"><option value="0">Alle</option><option>50</option><option>60</option><option>70</option><option>80</option></select></div>
@@ -384,6 +389,10 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
           <option value="pris">Totalpris</option>
           <option value="krm2">Kr/m²</option>
         </select>
+        <div class="sok" role="search">
+          <input type="search" id="sok" placeholder="Søk etter adresse, strøk, borettslag eller Finn-kode" aria-label="Søk etter bolig" autocomplete="off" enterkeyhint="search">
+          <button type="button" id="sokclear" aria-label="Tøm søket" hidden>×</button>
+        </div>
       </div>
       <div class="scroll" id="sidescroll">
         <div class="note" id="dbnote" hidden></div>
@@ -445,7 +454,7 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
   function lagretFilter() {
     const f = Object.assign(tomtFilter(), store.get("filter", {}));
     delete f.maks;
-    if (f.status !== "solgt") f.status = "tilsalgs";
+    if (f.status !== "solgt" && f.status !== "alle") f.status = "tilsalgs";
     return f;
   }
   const S = {
@@ -457,6 +466,7 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
     sort: store.get("sort", "score"),
     colorby: store.get("colorby", "score"),
     f: lagretFilter(),
+    sok: "",
     db: null,
     loaded: false,
   };
@@ -492,7 +502,12 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
     if (+f.sov && (b.soverom ?? 0) < +f.sov) return false;
     if (+f.bra && (b.braI ?? 0) < +f.bra) return false;
     if (f.eie && b.eieform !== f.eie) return false;
-    if ((f.status === "solgt") !== erSolgt(b)) return false;
+    if (f.status !== "alle" && (f.status === "solgt") !== erSolgt(b)) return false;
+    if (S.sok) {
+      const tekst = [b.adresse, b.tittel, b.bydel, b.postnr, b.finnkode, b.id, (b.omrade || {}).navn, (b.borettslag || {}).navn]
+        .filter(Boolean).join(" ").toLowerCase();
+      if (!S.sok.split(/\s+/).every((ord) => tekst.includes(ord))) return false;
+    }
     if (+f.smin && (b.score ?? 0) < +f.smin) return false;
     if (f.notg3 && (b.tg3 || []).length) return false;
     if (f.favonly && !b.favoritt) return false;
@@ -725,7 +740,9 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
       return;
     }
     if (!list.length) {
-      L.innerHTML = `<div class="empty"><h3>Ingen boliger passer filtrene</h3><p><button type="button" class="linkbtn" data-reset>Nullstill filtrene</button></p></div>`;
+      L.innerHTML = S.sok
+        ? `<div class="empty"><h3>Ingen treff på «${esc(S.sok)}»</h3><p>Søket gjelder bare boligene som passer filtrene. <button type="button" class="linkbtn" data-reset>Nullstill søk og filtre</button></p></div>`
+        : `<div class="empty"><h3>Ingen boliger passer filtrene</h3><p><button type="button" class="linkbtn" data-reset>Nullstill filtrene</button></p></div>`;
       return;
     }
     L.innerHTML = list.map(cardHTML).join("");
@@ -966,9 +983,20 @@ textarea { width: 100%; min-height: 84px; resize: vertical; }
   document.addEventListener("click", (e) => { const p = $("bydelpop"); if (p.open && !p.contains(e.target)) p.open = false; });
   function resetFilters() {
     S.f = tomtFilter();
+    S.sok = ""; $("sok").value = ""; $("sokclear").hidden = true;
     store.set("filter", S.f); buildFilterUI(); buildCommuteUI(); renderAll();
   }
   $("reset").onclick = resetFilters;
+  $("sok").addEventListener("input", (e) => {
+    S.sok = e.target.value.trim().toLowerCase();
+    $("sokclear").hidden = !S.sok;
+    renderAll();
+  });
+  $("sok").addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && S.sok) { e.stopPropagation(); e.target.value = ""; e.target.dispatchEvent(new Event("input")); }
+    if (e.key === "Enter") { const v = visible(); if (v.length === 1) select(v[0].id, true); }
+  });
+  $("sokclear").onclick = () => { const i = $("sok"); i.value = ""; i.dispatchEvent(new Event("input")); i.focus(); };
   $("filtertoggle").onclick = () => { const f = $("filters"); const c = f.classList.toggle("collapsed"); $("filtertoggle").setAttribute("aria-expanded", String(!c)); };
   $("sort").onchange = (e) => { S.sort = e.target.value; store.set("sort", S.sort); renderAll(); };
   $("colorby").onchange = (e) => { S.colorby = e.target.value; store.set("colorby", S.colorby); renderAll(); };
